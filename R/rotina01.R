@@ -53,7 +53,7 @@ base_ciclo10_2021 <-
       TRUE ~ "Erro"
     ),
 
-    x1_3_capacidade_do_estabelecimento_total = x1_3_capacidade_do_estabelecimento_masculino_total+x1_3_capacidade_do_estabelecimento_feminino_total,
+    x1_3_capacidade_do_estabelecimento_total = sum(x1_3_capacidade_do_estabelecimento_masculino_total,na.rm = TRUE)+sum(x1_3_capacidade_do_estabelecimento_feminino_total,na.rm = TRUE)
 
   ) |>
   select(
