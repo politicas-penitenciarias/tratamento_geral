@@ -52,15 +52,11 @@ base_ciclo10_2021 <-
       monitoramento == "Não" & domiciliar == "Não" ~ "Custódia em unidade prisional",
       TRUE ~ "Erro"
     ),
-
-    x1_3_capacidade_do_estabelecimento_total = sum(x1_3_capacidade_do_estabelecimento_masculino_total,na.rm = TRUE)+sum(x1_3_capacidade_do_estabelecimento_feminino_total,na.rm = TRUE)
-
   ) |>
   select(
     ciclo,semestre,ano,situacao_de_preenchimento,nome_do_estabelecimento,
     modalidade, everything()
-  ) |>
-  relocate(x1_3_capacidade_do_estabelecimento_total, .after = x1_3_capacidade_do_estabelecimento_feminino_total)
+  )
 
 
 
@@ -103,15 +99,12 @@ base_ciclo11_2021 <-
       monitoramento == "Não" & domiciliar == "Sim" ~ "Domiciliar não monitorado eletronicamente",
       monitoramento == "Não" & domiciliar == "Não" ~ "Custódia em unidade prisional",
       TRUE ~ "Erro"
-    ),
-
-    x1_3_capacidade_do_estabelecimento_total = x1_3_capacidade_do_estabelecimento_masculino_total+x1_3_capacidade_do_estabelecimento_feminino_total
+    )
   ) |>
   select(
     ciclo,semestre,ano,situacao_de_preenchimento,nome_do_estabelecimento,
     modalidade, everything()
-  ) |>
-  relocate(x1_3_capacidade_do_estabelecimento_total, .after = x1_3_capacidade_do_estabelecimento_feminino_total)
+  )
 
 ## CICLO 12 - SEMESTRE 01 - 2022 ----------------------
 
@@ -150,15 +143,12 @@ base_ciclo12_2022 <-
       monitoramento == "Sim" ~ "Domiciliar monitorado eletronicamente",
       monitoramento == "Não" & domiciliar == "Sim" ~ "Domiciliar não monitorado eletronicamente",
       monitoramento == "Não" & domiciliar == "Não" ~ "Custódia em unidade prisional"
-    ),
-
-    x1_3_capacidade_do_estabelecimento_total = x1_3_capacidade_do_estabelecimento_masculino_total+x1_3_capacidade_do_estabelecimento_feminino_total
+    )
   ) |>
   select(
     ciclo,semestre,ano,situacao_de_preenchimento,nome_do_estabelecimento,
     modalidade, everything()
-  ) |>
-  relocate(x1_3_capacidade_do_estabelecimento_total, .after = x1_3_capacidade_do_estabelecimento_feminino_total)
+  )
 
 ## CICLO 13 - SEMESTRE 02 - 2022 ----------------------
 
@@ -197,16 +187,12 @@ base_ciclo13_2022 <-
       monitoramento == "Sim" ~ "Domiciliar monitorado eletronicamente",
       monitoramento == "Não" & domiciliar == "Sim" ~ "Domiciliar não monitorado eletronicamente",
       monitoramento == "Não" & domiciliar == "Não" ~ "Custódia em unidade prisional"
-    ),
-
-    x1_3_capacidade_do_estabelecimento_total = x1_3_capacidade_do_estabelecimento_masculino_total+x1_3_capacidade_do_estabelecimento_feminino_total,
-
+    )
   ) |>
   select(
     ciclo,semestre,ano,situacao_de_preenchimento,nome_do_estabelecimento,
     modalidade, everything()
-  ) |>
-  relocate(x1_3_capacidade_do_estabelecimento_total, .after = x1_3_capacidade_do_estabelecimento_feminino_total)
+  )
 
 ## EMPILHANDO AS TABELAS  ------------------
 
@@ -219,6 +205,7 @@ base_geral <- bind_rows(
   mutate(
     uf = str_to_upper(uf)
   )
+
 
 ## SALVANDO AS TABELAS NA PASTA DE RELATORIOS DA DIRPP -------------
 ### TABELA GERAL -------------
