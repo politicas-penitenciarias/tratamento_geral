@@ -220,11 +220,6 @@ write_xlsx(
   path = "../data/data_xlsx/base_geral_infopen.xlsx"
 )
 
-
-
-
-
-
 ## TESTES PARA VERIFICACAO DO MONITORAMENTO ELETRONICO POR CICLO -----
 
 teste <-

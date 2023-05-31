@@ -4,418 +4,200 @@ library(janitor)
 library(writexl)
 library(readxl)
 
+# ESSA ROTINA TRATA A TABELA DO INFOPEN E A DIVIDE EM SUB-TABELAS
 
+##  LE A TABELA DO INFOPEN ---------------------------
 
-# ESSA ROTINA MONTA E TRATA TODAS AS TABELAS DO INFOPEN E OUTRAS NECESSARIAS AS ANALISES
-# O INTUITO EH CENTRALIZAR O BANCO DE DADOS FORMADO PELO TRATAMENTO DAS TABELAS ORIGINAIS
-
-## VETORES --------------------------
-vetor_filtro_monitoramento <- c("Monitoramento|Eletrônic(o|a)|Eletronic(o|a)|C(e|é)lula|Monitorado|Monitorados|Monitora(c|ç)(a|ã)o")
-vetor_filtro_domiciliar <- c("Domiciliar|P/Domiciliar")
-
-## CICLO 10 - SEMESTRE 01 - 2021 ----------------------
-
-vetor_filtro_monitoramento <- c("Monitoramento","Eletrônico","Eletronico")
-vetor_filtro_domiciliar    <- c("Domiciliar")
-
-base_ciclo10_2021 <-
-  read.csv2(
-    file = "../data_raw/ciclo10.csv",
-    fileEncoding = "UTF-8",
-    quote = "",
-    row.names = NULL,
-    stringsAsFactors = FALSE
-  ) |>
-  janitor::clean_names() |>
-  mutate_if(
-    is.character,
-    str_to_title
-  ) |>
-  mutate_if(
-    is.character,
-    str_trim
-  ) |>
-  mutate(
-    ciclo = 10,
-    semestre = 1,
-    ano = 2021
-  ) |>
-  relocate(
-    ciclo, .before = situacao_de_preenchimento,
-  ) |>
-  relocate(
-    semestre, .after = ciclo
-  ) |>
-  relocate(
-    ano, .after = semestre,
+dados_gerais <-
+  readRDS(
+    file = "../data/data_rds/base_geral_infopen.rds"
   )
 
-## CICLO 11 - SEMESTRE 02 - 2021 ----------------------
+## CAPACIDADE DAS UNIDADES  -------------
+### ENTIDADE 01 - CAPACIDADE 01 ----------------
+# ESSA ROTINA CONTEM OS DADOS DA CAPACIDADE DAS UNIDADES POR REGIME E SEXO
+# ELA TRATA OS ITENS X1_3 DA TABELA "dados gerais"
 
-base_ciclo11_2021 <-
-  read.csv2(
-    file = "../data_raw/ciclo11.csv",
-    fileEncoding = "UTF-8",
-    quote = "",
-    row.names = NULL,
-    stringsAsFactors = FALSE
-  ) |>
-  janitor::clean_names() |>
-  mutate_if(
-    is.character,
-    str_to_title
-  ) |>
-  mutate_if(
-    is.character,
-    str_trim
-  ) |>
-  mutate(
-    ciclo = 11,
-    semestre = 2,
-    ano = 2021
-  ) |>
-  relocate(
-    ciclo, .before = situacao_de_preenchimento,
-  ) |>
-  relocate(
-    semestre, .after = ciclo
-  ) |>
-  relocate(
-    ano, .after = semestre,
-  )
-
-## CICLO 12 - SEMESTRE 01 - 2022 ----------------------
-
-base_ciclo12_2022 <-
-  read.csv2(
-    file = "../data_raw/ciclo12.csv",
-    sep = ";",
-    fileEncoding = "UTF-8",
-    quote = "",
-    row.names = NULL,
-    stringsAsFactors = FALSE
-  ) |>
-  janitor::clean_names() |>
-  filter(situacao_de_preenchimento == "Validado") |>
-  mutate_if(
-    is.character,
-    str_to_title
-  ) |>
-  mutate_if(
-    is.character,
-    str_trim
-  ) |>
-  mutate(
-    ciclo = 12,
-    semestre = 1,
-    ano = 2022,
-
-    monitoramento = case_when(
-      str_detect(nome_do_estabelecimento,regex(vetor_filtro_monitoramento, ignore_case=TRUE)) ~ "Sim",
-      TRUE ~ "Não"
-    ),
-
-    domiciliar = case_when(
-      str_detect(nome_do_estabelecimento, regex(vetor_filtro_domiciliar, ignore_case =TRUE)) ~ "Sim",
-      TRUE ~ "Não"
-    ),
-
-    modalidade = case_when(
-      monitoramento == "Sim" ~ "Domiciliar monitorado",
-      monitoramento == "Sim" & domiciliar == "Sim" ~ "Domiciliar monitorado",
-      monitoramento == "Não" & domiciliar == "Sim" ~ "Domiciliar não monitorado",
-      monitoramento == "Não" & domiciliar == "Não" ~ "Presencial",
-    ),
-
-    x1_3_capacidade_do_estabelecimento_total = x1_3_capacidade_do_estabelecimento_masculino_total+x1_3_capacidade_do_estabelecimento_feminino_total
-  ) |>
-  relocate(
-    ciclo, .before = situacao_de_preenchimento,
-  ) |>
-  relocate(
-    semestre, .after = ciclo
-  ) |>
-  relocate(
-    ano, .after = semestre,
-  )|>
-  relocate(
-    modalidade, .after = nome_do_estabelecimento,
-  )|>
-  relocate(
-    monitoramento, .after = modalidade,
-  )|>
-  relocate(
-    domiciliar, .after = monitoramento,
-  )
-
-
-base_ciclo12_excel_sisdepen <-
-  read_xlsx(
-    path = "../data_raw/ciclo12_excel_sisdepen.xlsx"
-  ) |>
-  janitor::clean_names() |>
-  filter(
-    situacao_de_preenchimento == "Validado"
-  )|>
-  mutate_if(
-    is.character,
-    str_to_title
-  ) |>
-  mutate_if(
-    is.character,
-    str_trim
-  ) |>
-  mutate(
-    ciclo = 12,
-    semestre = 1,
-    ano = 2022,
-
-    monitoramento = case_when(
-      str_detect(nome_do_estabelecimento,regex(vetor_filtro_monitoramento, ignore_case=TRUE)) ~ "Sim",
-      TRUE ~ "Não"
-    ),
-
-    domiciliar = case_when(
-      str_detect(nome_do_estabelecimento, regex(vetor_filtro_domiciliar, ignore_case =TRUE)) ~ "Sim",
-      TRUE ~ "Não"
-    ),
-
-    modalidade = case_when(
-      monitoramento == "Sim" ~ "Domiciliar monitorado",
-      monitoramento == "Não" & domiciliar == "Sim" ~ "Domiciliar não monitorado",
-      monitoramento == "Não" & domiciliar == "Não" ~ "Presencial"
-    ),
-
-    x1_3_capacidade_do_estabelecimento_total = x1_3_capacidade_do_estabelecimento_masculino_total+x1_3_capacidade_do_estabelecimento_feminino_total
-  ) |>
+entidade01_capacidade01 <-
+  dados_gerais |>
   select(
-    ciclo,semestre,ano,situacao_de_preenchimento,nome_do_estabelecimento,
-    modalidade,everything()
+    ciclo,
+    ano,
+    semestre,
+    uf,
+    nome_do_estabelecimento,
+    modalidade,
+    capacidade_semAcondenação_masculino    = x1_3_capacidade_do_estabelecimento_presos_provisorios_masculino,
+    capacidade_semAcondenação_feminino     = x1_3_capacidade_do_estabelecimento_presos_provisorios_feminino,
+    capacidade_fechado_masculino           = x1_3_capacidade_do_estabelecimento_regime_fechado_masculino,
+    capacidade_fechado_feminino            = x1_3_capacidade_do_estabelecimento_regime_fechado_feminino,
+    capacidade_semiaberto_masculino        = x1_3_capacidade_do_estabelecimento_regime_semiaberto_masculino,
+    capacidade_semiaberto_feminino         = x1_3_capacidade_do_estabelecimento_regime_semiaberto_feminino,
+    capacidade_aberto_masculino            = x1_3_capacidade_do_estabelecimento_regime_aberto_masculino,
+    capacidade_aberto_feminino             = x1_3_capacidade_do_estabelecimento_regime_aberto_feminino,
+    capacidade_medidaAdeAsegurança_masculino = x1_3_capacidade_do_estabelecimento_medidas_de_seguranca_de_internacao_masculino,
+    capacidade_medidaAdeAsegurança_feminino  = x1_3_capacidade_do_estabelecimento_medidas_de_seguranca_de_internacao_feminino,
+    capacidade_rdd_masculino               = x1_3_capacidade_do_estabelecimento_regime_disciplinar_diferenciado_rdd_masculino,
+    capacidade_rdd_feminino                = x1_3_capacidade_do_estabelecimento_regime_disciplinar_diferenciado_rdd_feminino,
+    capacidade_outros_masculino            = x1_3_capacidade_do_estabelecimento_outro_s_qual_is_masculino,
+    capacidade_outros_feminino             = x1_3_capacidade_do_estabelecimento_outro_s_qual_is_feminino
   ) |>
-  relocate(x1_3_capacidade_do_estabelecimento_total, .after = x1_3_capacidade_do_estabelecimento_feminino_total)
-
-teste <-
-  base_ciclo12_excel_sisdepen |>
-  group_by(
-    modalidade
+  pivot_longer(
+    cols = starts_with("capacidade"),names_to = "variavel",values_to = "qtd"
   ) |>
-  summarise(
-    soma = sum(x4_1_populacao_prisional_total, na.rm = TRUE)
-  )
-
-teste2 <- base_ciclo12_excel_sisdepen |>
-  group_by(
-    ano
-  ) |>
-  summarise(
-    soma = sum(x4_1_populacao_prisional_total, na.rm = TRUE)
-  )
-
-teste3 <-
-  base_ciclo12_excel_sisdepen |>
-  filter(is.na(x4_1_populacao_prisional_total))
-
-busca_unidade1 <-
-  base_ciclo12_excel_sisdepen |>
-  filter(
-    situacao_de_preenchimento == "Validado",
-    str_detect(modalidade, "Domiciliar")
-  )|>
-  select(nome_do_estabelecimento,x4_1_populacao_prisional_total)
-
-busca_unidade2 <-
-  base_ciclo12_2022|>
-  filter(
-    situacao_de_preenchimento == "Validado",
-    str_detect(modalidade, "Domiciliar")
-  )|>
-  select(nome_do_estabelecimento,x4_1_populacao_prisional_total)
-
-unidade <-
-  full_join(x = busca_unidade1, y = busca_unidade2, by = "nome_do_estabelecimento",relationship = "many-to-many" ) |>
+  separate(col = "variavel", into=c("variavel","regime","sexo"),sep = "_") |>
   mutate(
-    sim = case_when(
-      x4_1_populacao_prisional_total.x != x4_1_populacao_prisional_total.y ~ "Diferente",
-      TRUE ~ "Igual"
-    )
+    qtd = if_else(is.na(qtd),0,qtd),
+    regime = str_to_sentence(str_replace_all(regime, "A", " ")),
+    sexo = str_to_sentence(sexo)
   )
 
-
-
-for (i in 1:NROW(busca_unidade)){
-  for(j in 1:NROW(busca_unidade)){
-  if(busca_unidade$x4_1_populacao_prisional_total[i]+busca_unidade$populacao2[j] == 124){
-    print(busca_unidade$nome_do_estabelecimento[i])
-    print(busca_unidade$nome_do_estabelecimento[j])
-  }
-}
-}
-
-
-
-
-
-## EMPILHANDO AS TABELAS  ------------------
-
-
-
-
-base_geral <- bind_rows(
-  base_ciclo10_2021,
-  base_ciclo11_2021,
-  base_ciclo12_2022
-) |>
-mutate(
-  nome_do_estabelecimento = abjutils::rm_accent(nome_do_estabelecimento),
-
-  monitoramento = case_when(
-      str_detect(nome_do_estabelecimento,regex(vetor_filtro_monitoramento, ignore_case=TRUE)) ~ "Sim",
-      TRUE ~ "Não"
-  ),
-
-    domiciliar = case_when(
-      str_detect(nome_do_estabelecimento, regex(vetor_filtro_domiciliar, ignore_case =TRUE)) ~ "Sim",
-      TRUE ~ "Não"
-    ),
-
-  x1_3_capacidade_do_estabelecimento_total = x1_3_capacidade_do_estabelecimento_masculino_total+x1_3_capacidade_do_estabelecimento_feminino_total,
-
-  cela_fisica = case_when(
-    monitoramento == "Não" & domiciliar == "Não" ~ "Sim",
-    TRUE ~ "Não"
-  ),
-
-  domiciliar_com_monitoramento = case_when(
-    monitoramento == "Sim" & domiciliar == "Sim" ~ "Sim",
-    TRUE ~ "Não"
-  ),
-
-  domiciliar_sem_monitoramento = case_when(
-    monitoramento == "Não" & domiciliar == "Sim" ~ "Sim",
-    TRUE ~ "Não"
-  ),
-
-  contagem = n()
-
-) |>
-  relocate(
-    cela_fisica, .after =  nome_do_estabelecimento
-) |>
-  relocate(
-    domiciliar_com_monitoramento, .after =  cela_fisica
-)|>
-  relocate(
-    domiciliar_sem_monitoramento, .after =  domiciliar_com_monitoramento
-  )|>
-  relocate(
-   monitoramento, .after =  domiciliar_sem_monitoramento
-  )|>
-  relocate(
-    domiciliar, .after =  monitoramento
-  )|>
-  relocate(
-    x1_3_capacidade_do_estabelecimento_total, .after =  x1_3_capacidade_do_estabelecimento_feminino_total
+### SALVA NA TABELA DE DADOS TRATADOS GERAL ----
+write_rds(
+  entidade01_capacidade01,
+  file = "../data/data_rds/entidade01_capacidade01.rds"
 )
 
-## SALVANDO AS TABELAS NA PASTA DESTE PROJETO -------------
+write_xlsx(
+  entidade01_capacidade01,
+  path = "../data/data_xlsx/entidade01_capacidade01.xlsx"
+)
+
+### SALVA NA TABELA DE DADOS TRATADOS NO RELATORIO DE INDICADORES
+write_rds(
+  entidade01_capacidade01,
+  file = "../relatorio_indicadores/data/data_rds/entidade01_capacidade01.rds"
+)
+
+write_xlsx(
+  entidade01_capacidade01,
+  path = "../relatorio_indicadores/data/data_xlsx/entidade01_capacidade01.xlsx"
+)
+
+### ENTIDADE 01 - CAPACIDADE 02 - CAPACIDADE POR CICLO, REGIME E SEXO -------------
+
+entidade01_capacidade02 <-
+  entidade01_capacidade01 |>
+  group_by(ciclo, ano, semestre,uf, modalidade, variavel, regime, sexo) |>
+  summarise(
+    qtd = sum(qtd, na.rm = TRUE)
+  )
 
 write_rds(
-  base_geral,
-  file = "data/base_geral_infopen.rds"
+  entidade01_capacidade02,
+  file = "../data/data_rds/entidade01_capacidade02.rds"
 )
 
-## SALVANDO TABELA NO RELATORIO DE INDICADORES -------------
+write_xlsx(
+  entidade01_capacidade02,
+  path = "../data/data_xlsx/entidade01_capacidade02.xlsx"
+)
 
 write_rds(
-  base_geral,
-  file = "../relatorio_indicadores/data_raw/base_geral_infopen.rds"
+  entidade01_capacidade02,
+  file = "../relatorio_indicadores/data/data_rds/entidade01_capacidade02.rds"
 )
 
-mon_ciclo12 <-
-  base_geral |>
-  filter(
-    ciclo ==12,
-    situacao_de_preenchimento == "Validado"
-  ) |>
-  group_by(
-    ciclo, domiciliar_com_monitoramento,domiciliar_sem_monitoramento
-  ) |>
-  summarise(
-    pop = sum(x4_1_populacao_prisional_total, na.rm = TRUE),
-    contagem = n()
-  )
+write_xlsx(
+  entidade01_capacidade02,
+  path = "../relatorio_indicadores/data/data_xlsx/entidade01_capacidade02.xlsx"
+)
 
-teste_pop <- base_geral |>
-  filter(
-    ciclo == 12,
-    x4_1_populacao_prisional_total == 123                              )
+## POPULACAO DAS UNIDADES -------------
 
-comp_ciclo12 <-
-  read.csv2(
-    file = "data_raw/csv_site_ciclo12.csv",
-    fileEncoding = "UTF-8",
-    quote = "",
-    row.names = NULL,
-    stringsAsFactors = FALSE
-  ) |>
-  janitor::clean_names() |>
-  mutate_if(
-    is.character,
-    str_to_title
-  ) |>
-  mutate_if(
-    is.character,
-    str_trim
-  ) |>
-  mutate(
-    ciclo = 11,
-    semestre = 2,
-    ano = 2021
-  ) |>
-  relocate(
-    ciclo, .before = situacao_de_preenchimento,
-  ) |>
-  relocate(
-    semestre, .after = ciclo
-  ) |>
-  relocate(
-    ano, .after = semestre,
-  )
-comp_ciclo12 <- comp_ciclo12 |>
-  mutate(
-    nome_do_estabelecimento = abjutils::rm_accent(nome_do_estabelecimento),
+### ENTIDADE 02 - POP. POR MODALIDADE
 
-    monitoramento = case_when(
-      str_detect(nome_do_estabelecimento,regex(vetor_filtro_monitoramento, ignore_case=TRUE)) ~ "Sim",
-      TRUE ~ "Não"
-    ),
-
-    domiciliar = case_when(
-      str_detect(nome_do_estabelecimento, regex(vetor_filtro_domiciliar, ignore_case =TRUE)) & monitoramento == "Não" ~ "Sim",
-      TRUE ~ "Não"
-    ),
-
-    x1_3_capacidade_do_estabelecimento_total = x1_3_capacidade_do_estabelecimento_masculino_total+x1_3_capacidade_do_estabelecimento_feminino_total,
-
-    monitoramento_domiciliar = case_when(
-      monitoramento == "Sim" & domiciliar == "Sim" ~ "Sim",
-      TRUE ~ "Não"
-    )
-
-  ) |>
-  relocate(
-    monitoramento, .after =  nome_do_estabelecimento
-  ) |>
-  relocate(
-    domiciliar, .after =  monitoramento
-  )|>
-  relocate(
-    x1_3_capacidade_do_estabelecimento_total, .after =  x1_3_capacidade_do_estabelecimento_feminino_total
-  )|>
-  relocate(
-    monitoramento_domiciliar, .after =  domiciliar
-  ) |>
+entidade02_populacao01 <-
+  dados_gerais |>
   select(
-    monitoramento,monitoramento_domiciliar,domiciliar,nome_do_estabelecimento,x4_1_populacao_prisional_total,situacao_de_preenchimento
+    ciclo,
+    ano,
+    semestre,
+    modalidade,
+    uf,
+    nome_do_estabelecimento,
+    modalidade,
+    população_semAcondenação_justiçaAestadual_masculino = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_justica_estadual_masculino,
+    população_semAcondenação_justiçaAestadual_feminino  = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_justica_estadual_feminino,
+    população_semAcondenação_justicaAfederal_masculino = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_justica_federal_masculino,
+    população_semAcondenação_justicaAfederal_feminino  = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_justica_federal_feminino,
+    população_semAcondenação_outros_masculino = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_outros_just_trab_civel_masculino,
+    população_semAcondenação_outros_feminino  = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_outros_just_trab_civel_feminino,
+
+    população_fechado_justiçaAestadual_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_justica_estadual_masculino,
+    população_fechado_justiçaAestadual_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_justica_estadual_feminino,
+    população_fechado_justicaAfederal_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_justica_federal_masculino,
+    população_fechado_justicaAfederal_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_justica_federal_feminino,
+    população_fechado_outros_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_outros_just_trab_civel_masculino,
+    população_fechado_outros_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_outros_just_trab_civel_feminino,
+
+    população_semiaberto_justiçaAestadual_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_semiaberto_justica_estadual_masculino,
+    população_semiaberto_justiçaAestadual_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_semiaberto_justica_estadual_feminino,
+    população_semiaberto_justiçaAfederal_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_semiaberto_justica_federal_masculino,
+    população_semiaberto_justiçaAfederal_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_semiaberto_justica_federal_feminino,
+    população_semiaberto_outros_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_semiaberto_outros_just_trab_civel_masculino,
+    população_semiaberto_outros_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_semiaberto_outros_just_trab_civel_feminino,
+
+    população_aberto_justiçaAestadual_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_aberto_justica_estadual_masculino,
+    população_aberto_justiçaAestadual_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_aberto_justica_estadual_feminino,
+    população_aberto_justiçaAfederal_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_aberto_justica_federal_masculino,
+    população_aberto_justiçaAfederal_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_aberto_justica_federal_feminino,
+    população_aberto_outros_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_aberto_outros_just_trab_civel_masculino,
+    população_aberto_outros_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_aberto_outros_just_trab_civel_feminino,
+
+    população_medidaAdeAsegurancaAinternacao_justiçaAestadual_masculino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_estadual_masculino,
+    população_medidaAdeAsegurancaAinternacao_justiçaAestadual_feminino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_estadual_feminino,
+    população_medidaAdeAsegurancaAinternacao_justiçaAfederal_masculino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_federal_masculino,
+    população_medidaAdeAsegurancaAinternacao_justiçaAfederal_feminino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_federal_feminino,
+    população_medidaAdeAsegurancaAinternacao_outros_masculino = x4_1_populacao_prisional_medida_de_seguranca_internacao_outros_just_trab_civel_masculino,
+    população_medidaAdeAsegurancaAinternacao_outros_feminino = x4_1_populacao_prisional_medida_de_seguranca_internacao_outros_just_trab_civel_feminino,
+
+    população_medidaAdeAsegurancaAtratamentoAambulatorial_justiçaAestadual_masculino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_estadual_masculino,
+    população_medidaAdeAsegurancaAtratamentoAambulatorial_justiçaAestadual_feminino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_estadual_feminino,
+    população_medidaAdeAsegurancaAtratamentoAambulatorial_justiçaAfederal_masculino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_federal_masculino,
+    população_medidaAdeAsegurancaAtratamentoAambulatorial_justiçaAfederal_feminino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_federal_feminino,
+    população_medidaAdeAsegurancaAtratamentoAambulatorial_outros_masculino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_outros_just_trab_civel_masculino,
+    população_medidaAdeAsegurancaAtratamentoAambulatorial_outros_feminino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_outros_just_trab_civel_feminino
   ) |>
-  filter()
+  pivot_longer(
+    cols = starts_with("população"), names_to = "variavel", values_to =  "qtd"
+  ) |>
+  separate(col = "variavel", into=c("variavel","regime","ambito_origem","sexo"),sep = "_") |>
+  mutate(
+    qtd = if_else(is.na(qtd),0,qtd),
+    variavel = str_to_sentence(variavel),
+    regime = str_to_sentence(str_replace_all(regime, "A", " ")),
+    ambito_origem = str_to_sentence(str_replace_all(ambito_origem, "A", " ")),
+    sexo = str_to_sentence(sexo)
+  )
+
+
+## TAXA DE OCUPACAO --------------
+# SEPARA A CAPACIDADE POR MODALIDADE, UF E REGIME
+
+taxa_ocupacao_capacidade <-
+  entidade01_capacidade02 |>
+  filter(modalidade == "Custódia em unidade prisional") |>
+  group_by(ciclo,ano,semestre,uf,variavel,regime,sexo) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
+  ) |>
+  mutate(
+    regime = str_to_sentence(if_else(regime == "Rdd", "fechado",regime)),
+  )
+
+taxa_ocupacao_populacao <-
+  entidade02_populacao01 |>
+  filter(modalidade == "Custódia em unidade prisional") |>
+  group_by(ciclo,ano,semestre,uf,variavel,regime,sexo) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
+  ) |>
+  mutate(
+    regime = str_to_sentence(if_else(str_detect(regex("Medida de segurança",ignore_case=TRUE)), "Medida de segurança",regime)),
+  )
+
+
+
+
+
