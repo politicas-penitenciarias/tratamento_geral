@@ -27,6 +27,7 @@ entidade01_capacidade01 <-
     uf,
     nome_do_estabelecimento,
     modalidade,
+    ambito,
     capacidade_semAcondenação_masculino    = x1_3_capacidade_do_estabelecimento_presos_provisorios_masculino,
     capacidade_semAcondenação_feminino     = x1_3_capacidade_do_estabelecimento_presos_provisorios_feminino,
     capacidade_fechado_masculino           = x1_3_capacidade_do_estabelecimento_regime_fechado_masculino,
@@ -78,7 +79,7 @@ write_xlsx(
 
 entidade01_capacidade02 <-
   entidade01_capacidade01 |>
-  group_by(ciclo, ano, semestre,uf, modalidade, variavel, regime, sexo) |>
+  group_by(ciclo, ano, semestre,uf, modalidade, ambito, variavel, regime, sexo) |>
   summarise(
     qtd = sum(qtd, na.rm = TRUE)
   )
@@ -114,6 +115,7 @@ entidade02_populacao01 <-
     ano,
     semestre,
     modalidade,
+    ambito,
     uf,
     nome_do_estabelecimento,
     modalidade,
@@ -145,19 +147,19 @@ entidade02_populacao01 <-
     população_aberto_outros_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_aberto_outros_just_trab_civel_masculino,
     população_aberto_outros_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_aberto_outros_just_trab_civel_feminino,
 
-    população_medidaAdeAsegurancaAinternacao_justiçaAestadual_masculino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_estadual_masculino,
-    população_medidaAdeAsegurancaAinternacao_justiçaAestadual_feminino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_estadual_feminino,
-    população_medidaAdeAsegurancaAinternacao_justiçaAfederal_masculino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_federal_masculino,
-    população_medidaAdeAsegurancaAinternacao_justiçaAfederal_feminino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_federal_feminino,
-    população_medidaAdeAsegurancaAinternacao_outros_masculino = x4_1_populacao_prisional_medida_de_seguranca_internacao_outros_just_trab_civel_masculino,
-    população_medidaAdeAsegurancaAinternacao_outros_feminino = x4_1_populacao_prisional_medida_de_seguranca_internacao_outros_just_trab_civel_feminino,
+    população_medidaAdeAsegurançaAinternação_justiçaAestadual_masculino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_estadual_masculino,
+    população_medidaAdeAsegurançaAinternação_justiçaAestadual_feminino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_estadual_feminino,
+    população_medidaAdeAsegurançaAinternação_justiçaAfederal_masculino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_federal_masculino,
+    população_medidaAdeAsegurançaAinternação_justiçaAfederal_feminino = x4_1_populacao_prisional_medida_de_seguranca_internacao_justica_federal_feminino,
+    população_medidaAdeAsegurançaAinternação_outros_masculino = x4_1_populacao_prisional_medida_de_seguranca_internacao_outros_just_trab_civel_masculino,
+    população_medidaAdeAsegurançaAinternação_outros_feminino = x4_1_populacao_prisional_medida_de_seguranca_internacao_outros_just_trab_civel_feminino,
 
-    população_medidaAdeAsegurancaAtratamentoAambulatorial_justiçaAestadual_masculino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_estadual_masculino,
-    população_medidaAdeAsegurancaAtratamentoAambulatorial_justiçaAestadual_feminino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_estadual_feminino,
-    população_medidaAdeAsegurancaAtratamentoAambulatorial_justiçaAfederal_masculino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_federal_masculino,
-    população_medidaAdeAsegurancaAtratamentoAambulatorial_justiçaAfederal_feminino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_federal_feminino,
-    população_medidaAdeAsegurancaAtratamentoAambulatorial_outros_masculino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_outros_just_trab_civel_masculino,
-    população_medidaAdeAsegurancaAtratamentoAambulatorial_outros_feminino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_outros_just_trab_civel_feminino
+    população_medidaAdeAsegurançaAtratamentoAambulatorial_justiçaAestadual_masculino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_estadual_masculino,
+    população_medidaAdeAsegurançaAtratamentoAambulatorial_justiçaAestadual_feminino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_estadual_feminino,
+    população_medidaAdeAsegurançaAtratamentoAambulatorial_justiçaAfederal_masculino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_federal_masculino,
+    população_medidaAdeAsegurançaAtratamentoAambulatorial_justiçaAfederal_feminino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_justica_federal_feminino,
+    população_medidaAdeAsegurançaAtratamentoAambulatorial_outros_masculino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_outros_just_trab_civel_masculino,
+    população_medidaAdeAsegurançaAtratamentoAambulatorial_outros_feminino = x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_outros_just_trab_civel_feminino
   ) |>
   pivot_longer(
     cols = starts_with("população"), names_to = "variavel", values_to =  "qtd"
@@ -172,31 +174,382 @@ entidade02_populacao01 <-
   )
 
 
-## TAXA DE OCUPACAO --------------
+## CAPACIDADE E POPULACAO --------------
 # SEPARA A CAPACIDADE POR MODALIDADE, UF E REGIME
 
 taxa_ocupacao_capacidade <-
   entidade01_capacidade02 |>
-  filter(modalidade == "Custódia em unidade prisional") |>
-  group_by(ciclo,ano,semestre,uf,variavel,regime,sexo) |>
-  summarise(
-    qtd = sum(qtd,na.rm = TRUE)
+  filter(
+    modalidade == "Custódia em unidade prisional"
   ) |>
   mutate(
     regime = str_to_sentence(if_else(regime == "Rdd", "fechado",regime)),
+  ) |>
+  group_by(ciclo,ano,semestre,ambito,uf,variavel,regime,sexo) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
   )
+
 
 taxa_ocupacao_populacao <-
   entidade02_populacao01 |>
-  filter(modalidade == "Custódia em unidade prisional") |>
-  group_by(ciclo,ano,semestre,uf,variavel,regime,sexo) |>
+  mutate(
+    regime = if_else(str_detect(regime,regex("Medida de segurança", ignore_case=TRUE)),"Medida de segurança", regime),
+  ) |>
+  filter(
+    modalidade == "Custódia em unidade prisional"
+  ) |>
+  group_by(ciclo,ano,semestre,ambito, uf,variavel,regime,sexo) |>
   summarise(
     qtd = sum(qtd,na.rm = TRUE)
-  ) |>
-  mutate(
-    regime = str_to_sentence(if_else(str_detect(regex("Medida de segurança",ignore_case=TRUE)), "Medida de segurança",regime)),
   )
 
+
+
+## TAXA DE OCUPACAO E DEFICIT DE VAGAS -----
+
+taxa_ocupacao_geral <-
+  bind_rows(taxa_ocupacao_capacidade,taxa_ocupacao_populacao) |>
+  pivot_wider(
+    names_from = variavel,
+    values_from = qtd
+  )
+
+taxa_ocupacao_uf_estadual <-
+  taxa_ocupacao_geral |>
+  filter(ambito == "Estadual") |>
+  group_by(ciclo, ano, semestre, uf) |>
+  summarise(
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+  )
+
+taxa_ocupacao_sexo_uf_estadual <-
+  taxa_ocupacao_geral |>
+  filter(ambito == "Estadual") |>
+  group_by(ciclo, ano, semestre, uf, sexo) |>
+  summarise(
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+  )
+
+taxa_ocupacao_regime_uf_estadual <-
+  taxa_ocupacao_geral |>
+  filter(ambito == "Estadual") |>
+  group_by(ciclo, ano, semestre, uf, regime) |>
+  summarise(
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+  ) |>
+  filter(
+    taxa_ocupacao > 0
+  )
+
+taxa_ocupacao_brasil_estadual <-
+  taxa_ocupacao_geral |>
+  filter(ambito == "Estadual") |>
+  group_by(ciclo, ano, semestre) |>
+  summarise(
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+  )
+
+taxa_ocupacao_brasil2_estadual <- # SOMENTE REGIMES FECHADO, SEM CONDENACAO E MEDIDA DE SEGURANCAO
+  taxa_ocupacao_geral |>
+  filter(ambito == "Estadual") |>
+  filter(
+    regime %in% c("Fechado","Medida de segurança","Sem condenação")
+  ) |>
+  group_by(ciclo, ano, semestre, regime) |>
+  summarise(
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+  )
+
+taxa_ocupacao_brasil3_estadual <- # SEPARADA POR AMBITO
+  taxa_ocupacao_geral |>
+  filter(ambito == "Estadual") |>
+  filter(
+    regime %in% c("Fechado","Medida de segurança","Sem condenação")
+  ) |>
+  group_by(ciclo, ano, ambito, semestre, regime) |>
+  summarise(
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+  )
+
+taxa_ocupacao_sexo_brasil_estadual <-
+  taxa_ocupacao_geral |>
+  filter(ambito == "Estadual") |>
+  group_by(ciclo, ano, semestre, sexo) |>
+  summarise(
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+  )
+
+taxa_ocupacao_regime_brasil_estadual <-
+  taxa_ocupacao_geral |>
+  filter(ambito == "Estadual") |>
+  group_by(ciclo, ano, semestre, regime) |>
+  summarise(
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+  )
+
+## APRISIONAMENTO --------------
+
+# TABELA RETIRADA DO SIDRA NO LINK
+# https://sidra.ibge.gov.br/tabela/5917
+# A METODOLOGIA DO IBGE ARREDONDA A ESTIMATIVA NA ORDEM DE 1000 PESSOAS
+# ESSE CALCULO TODOS OS APENADOS - INCLUSIVE EM PRISAO DOMICILIAR MONITORADOS OU NAO
+# ESSE CALCULO TODOS OS APENADOS - EM AMBITOS ESTADUAL E FEDERAL
+
+tabela_ibge_trimestre4_2022_ciclo13 <-
+  read_xlsx(
+    path = "../data_raw/populacao_ibge_pnad_continua_trimestre4_2022_ciclo13.xlsx",
+    skip = 4
+  ) |>
+  filter(!is.na(Homens))
+names(tabela_ibge_trimestre4_2022_ciclo13) <- c("uf","Masculino","Feminino")
+
+tabela_ibge_trimestre4_2022_ciclo13<-
+  tabela_ibge_trimestre4_2022_ciclo13 |>
+  mutate(
+    uf = case_when(
+      uf == "Rondônia" ~ "RO",
+      uf == "Acre"     ~ "AC",
+      uf == "Amazonas" ~ "AM",
+      uf == "Roraima" ~ "RR",
+      uf == "Pará"     ~ "PA",
+      uf == "Amapá"    ~ "AP",
+      uf == "Tocantins"~ "TO",
+      uf == "Maranhão" ~ "MA",
+      uf == "Piauí"    ~ "PI",
+      uf == "Ceará"    ~ "CE",
+      uf == "Rio Grande do Norte" ~ "RN",
+      uf == "Paraíba"  ~ "PB",
+      uf == "Pernambuco" ~ "PE",
+      uf == "Alagoas"  ~ "AL",
+      uf == "Sergipe"  ~ "SE",
+      uf == "Bahia"    ~ "BA",
+      uf == "Minas Gerais" ~ "MG",
+      uf == "Espírito Santo" ~ "ES",
+      uf == "Rio de Janeiro" ~ "RJ",
+      uf == "São Paulo" ~ "SP",
+      uf == "Paraná" ~ "PR",
+      uf == "Santa Catarina" ~ "SC",
+      uf == "Rio Grande do Sul" ~ "RS",
+      uf == "Mato Grosso" ~ "MT",
+      uf == "Mato Grosso do Sul" ~ "MS",
+      uf == "Goiás" ~ "GO",
+      uf == "Distrito Federal" ~ "DF",
+      TRUE ~ "Erro"
+    ),
+
+    Masculino = Masculino * 1000,
+    Feminino = Feminino * 1000,
+    ciclo = 13,
+    ano = 2022,
+    semestre = 2
+  ) |>
+  arrange(uf) |>
+  pivot_longer(
+    cols = c("Feminino","Masculino"),
+    names_to = "sexo",
+    values_to = "populacao_ibge"
+  )
+
+
+tabela_ibge_trimestre2_2022_ciclo12 <-
+  read_xlsx(
+    path = "../data_raw/populacao_ibge_pnad_continua_trimestre2_2022_ciclo12.xlsx",
+    skip = 4
+  ) |>
+  filter(!is.na(Homens))
+names(tabela_ibge_trimestre2_2022_ciclo12) <- c("uf","Masculino","Feminino")
+
+tabela_ibge_trimestre2_2022_ciclo12 <-
+  tabela_ibge_trimestre2_2022_ciclo12 |>
+  mutate(
+    uf = case_when(
+      uf == "Rondônia" ~ "RO",
+      uf == "Acre"     ~ "AC",
+      uf == "Amazonas" ~ "AM",
+      uf == "Roraima" ~ "RR",
+      uf == "Pará"     ~ "PA",
+      uf == "Amapá"    ~ "AP",
+      uf == "Tocantins"~ "TO",
+      uf == "Maranhão" ~ "MA",
+      uf == "Piauí"    ~ "PI",
+      uf == "Ceará"    ~ "CE",
+      uf == "Rio Grande do Norte" ~ "RN",
+      uf == "Paraíba"  ~ "PB",
+      uf == "Pernambuco" ~ "PE",
+      uf == "Alagoas"  ~ "AL",
+      uf == "Sergipe"  ~ "SE",
+      uf == "Bahia"    ~ "BA",
+      uf == "Minas Gerais" ~ "MG",
+      uf == "Espírito Santo" ~ "ES",
+      uf == "Rio de Janeiro" ~ "RJ",
+      uf == "São Paulo" ~ "SP",
+      uf == "Paraná" ~ "PR",
+      uf == "Santa Catarina" ~ "SC",
+      uf == "Rio Grande do Sul" ~ "RS",
+      uf == "Mato Grosso" ~ "MT",
+      uf == "Mato Grosso do Sul" ~ "MS",
+      uf == "Goiás" ~ "GO",
+      uf == "Distrito Federal" ~ "DF",
+      TRUE ~ "Erro"
+    ),
+
+    Masculino = Masculino * 1000,
+    Feminino = Feminino * 1000,
+    ciclo = 12,
+    ano = 2022,
+    semestre = 1
+  ) |>
+  arrange(uf) |>
+  pivot_longer(
+    cols = c("Feminino","Masculino"),
+    names_to = "sexo",
+    values_to = "populacao_ibge"
+  )
+
+
+tabela_ibge_trimestre4_2021_ciclo11 <-
+  read_xlsx(
+    path = "../data_raw/populacao_ibge_pnad_continua_trimestre4_2021_ciclo11.xlsx",
+    skip = 5
+  ) |>
+  filter(!is.na(Mulheres)) |>
+  mutate(
+    uf = "Brasil",
+    ciclo = 11,
+    ano = 2021,
+    semestre = 2,
+    Masculino = as.numeric(Homens) * 1000,
+    Feminino = as.numeric(Mulheres) * 1000
+  ) |>
+  select(-Homens, -Mulheres) |>
+  pivot_longer(
+    cols = c("Feminino","Masculino"),
+    names_to = "sexo",
+    values_to = "populacao_ibge"
+  )
+
+
+tabela_ibge_trimestre2_2021_ciclo10 <-
+  read_xlsx(
+    path = "../data_raw/populacao_ibge_pnad_continua_trimestre2_2021_ciclo10.xlsx",
+    skip = 5
+  ) |>
+  filter(!is.na(Mulheres)) |>
+  mutate(
+    uf = "Brasil",
+    ciclo = 10,
+    ano = 2021,
+    semestre = 1,
+    Masculino = as.numeric(Homens) * 1000,
+    Feminino = as.numeric(Mulheres) * 1000
+  ) |>
+  select(-Homens, -Mulheres) |>
+  pivot_longer(
+    cols = c("Feminino","Masculino"),
+    names_to = "sexo",
+    values_to = "populacao_ibge"
+  )
+
+populacao_ibge_ciclo_12_13 <-
+  bind_rows(
+    tabela_ibge_trimestre2_2022_ciclo12,
+    tabela_ibge_trimestre4_2022_ciclo13,
+  )
+
+soma_populacao_ibge_ciclo_12_13 <-
+  populacao_ibge_ciclo_12_13 |>
+  group_by(
+    ciclo,ano,semestre,sexo
+  ) |>
+  summarise(
+    populacao_ibge = sum(populacao_ibge, na.rm = TRUE)
+  ) |>
+  mutate(
+    uf = "Brasil"
+  ) |>
+  relocate(uf, .before = ciclo)
+
+soma_populacao_ibge_ciclo_10_11 <-
+  bind_rows(
+    tabela_ibge_trimestre2_2021_ciclo10,
+    tabela_ibge_trimestre4_2021_ciclo11
+  )
+
+soma_populacao_ibge_completa <-
+  bind_rows(
+    soma_populacao_ibge_ciclo_10_11,
+    soma_populacao_ibge_ciclo_12_13
+  )
+
+
+# TABELA COM DADOS POPULACIONAIS DE P
+
+aprisionamento_populacao <-
+  entidade02_populacao01 |>
+  filter(modalidade == "Custódia em unidade prisional") |>
+  group_by(
+    uf, ciclo, ano, semestre, sexo
+  ) |>
+ summarise(
+    populacao_prisional = sum(qtd, na.rm = TRUE)
+  )
+
+soma_populacao_prisional_completa <-
+  aprisionamento_populacao |>
+  group_by(
+    ciclo,ano,semestre,sexo
+  ) |>
+  summarise(
+    populacao_prisional = sum(populacao_prisional,na.rm = TRUE)
+  )
+
+taxa_aprisionamento_geral_brasil <-
+  left_join(soma_populacao_ibge_completa,soma_populacao_prisional_completa) |>
+  group_by(ciclo, ano, semestre) |>
+  summarise(
+    populacao_prisional = sum(populacao_prisional, na.rm = TRUE),
+    populacao_ibge = sum(populacao_ibge,na.rm = TRUE),
+    tx_aprisionamento = (sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000
+  )
+
+taxa_aprisionamento_geral_brasil_sexo <-
+  left_join(soma_populacao_ibge_completa,soma_populacao_prisional_completa) |>
+  group_by(ciclo, ano, semestre, sexo) |>
+  summarise(
+    populacao_prisional = sum(populacao_prisional, na.rm = TRUE),
+    populacao_ibge = sum(populacao_ibge,na.rm = TRUE),
+    tx_aprisionamento = (sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000
+  )
+
+
+taxa_aprisionamento_geral_uf_sexo <-
+  left_join(
+    aprisionamento_populacao,
+    populacao_ibge_ciclo_12_13
+  ) |>
+  filter(!ciclo %in% c(10,11)) |>
+  mutate(
+    tx_aprisionamento = (sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000
+  )
+
+
+taxa_aprisionamento_geral_uf <-
+  taxa_aprisionamento_geral_uf_sexo |>
+  group_by(
+    uf, ciclo, ano, semestre
+  ) |>
+  summarise(
+    tx_aprisionamento = (sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000
+  )
 
 
 
