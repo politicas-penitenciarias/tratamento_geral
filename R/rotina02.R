@@ -254,6 +254,23 @@ write_xlsx(
   path = "../relatorio_indicadores/data/data_xlsx/capacidade_populacao_geral.xlsx"
 )
 
+capacidade_populacao_geral2 <-
+  capacidade_populacao_geral |>
+  group_by(ciclo,ano,semestre,modalidade,variavel,ambito,sexo) |>
+  summarise(
+    qtd = sum(qtd, na.rm = TRUE)
+  )
+
+deficit_vagas <-
+  capacidade_populacao_geral2 |>
+  pivot_wider(
+    names_from = variavel,
+    values_from = qtd
+  ) |>
+  mutate(
+    deficit = as.integer(round(Capacidade - População))
+  )
+
 ## CAPACIDADE E POPULACAO --------------
 # SEPARA A CAPACIDADE POR MODALIDADE, UF E REGIME
 
