@@ -6,7 +6,7 @@ library(readxl)
 
 # ESSA ROTINA TRATA A TABELA DO INFOPEN E A DIVIDE EM SUB-TABELAS
 
-##  LE A TABELA DO INFOPEN ---------------------------
+## LE A TABELA DO INFOPEN ---------------------------
 
 dados_gerais <-
   readRDS(
@@ -28,20 +28,20 @@ entidade01_capacidade01 <-
     nome_do_estabelecimento,
     modalidade,
     ambito,
-    capacidade_semAcondenação_masculino    = x1_3_capacidade_do_estabelecimento_presos_provisorios_masculino,
-    capacidade_semAcondenação_feminino     = x1_3_capacidade_do_estabelecimento_presos_provisorios_feminino,
-    capacidade_fechado_masculino           = x1_3_capacidade_do_estabelecimento_regime_fechado_masculino,
-    capacidade_fechado_feminino            = x1_3_capacidade_do_estabelecimento_regime_fechado_feminino,
-    capacidade_semiaberto_masculino        = x1_3_capacidade_do_estabelecimento_regime_semiaberto_masculino,
-    capacidade_semiaberto_feminino         = x1_3_capacidade_do_estabelecimento_regime_semiaberto_feminino,
-    capacidade_aberto_masculino            = x1_3_capacidade_do_estabelecimento_regime_aberto_masculino,
-    capacidade_aberto_feminino             = x1_3_capacidade_do_estabelecimento_regime_aberto_feminino,
-    capacidade_medidaAdeAsegurança_masculino = x1_3_capacidade_do_estabelecimento_medidas_de_seguranca_de_internacao_masculino,
-    capacidade_medidaAdeAsegurança_feminino  = x1_3_capacidade_do_estabelecimento_medidas_de_seguranca_de_internacao_feminino,
-    capacidade_rdd_masculino               = x1_3_capacidade_do_estabelecimento_regime_disciplinar_diferenciado_rdd_masculino,
-    capacidade_rdd_feminino                = x1_3_capacidade_do_estabelecimento_regime_disciplinar_diferenciado_rdd_feminino,
-    capacidade_outros_masculino            = x1_3_capacidade_do_estabelecimento_outro_s_qual_is_masculino,
-    capacidade_outros_feminino             = x1_3_capacidade_do_estabelecimento_outro_s_qual_is_feminino
+    Capacidade_semAcondenação_masculino    = x1_3_capacidade_do_estabelecimento_presos_provisorios_masculino,
+    Capacidade_semAcondenação_feminino     = x1_3_capacidade_do_estabelecimento_presos_provisorios_feminino,
+    Capacidade_fechado_masculino           = x1_3_capacidade_do_estabelecimento_regime_fechado_masculino,
+    Capacidade_fechado_feminino            = x1_3_capacidade_do_estabelecimento_regime_fechado_feminino,
+    Capacidade_semiaberto_masculino        = x1_3_capacidade_do_estabelecimento_regime_semiaberto_masculino,
+    Capacidade_semiaberto_feminino         = x1_3_capacidade_do_estabelecimento_regime_semiaberto_feminino,
+    Capacidade_aberto_masculino            = x1_3_capacidade_do_estabelecimento_regime_aberto_masculino,
+    Capacidade_aberto_feminino             = x1_3_capacidade_do_estabelecimento_regime_aberto_feminino,
+    Capacidade_medidaAdeAsegurança_masculino = x1_3_capacidade_do_estabelecimento_medidas_de_seguranca_de_internacao_masculino,
+    Capacidade_medidaAdeAsegurança_feminino  = x1_3_capacidade_do_estabelecimento_medidas_de_seguranca_de_internacao_feminino,
+    Capacidade_rdd_masculino               = x1_3_capacidade_do_estabelecimento_regime_disciplinar_diferenciado_rdd_masculino,
+    Capacidade_rdd_feminino                = x1_3_capacidade_do_estabelecimento_regime_disciplinar_diferenciado_rdd_feminino,
+    Capacidade_outros_masculino            = x1_3_capacidade_do_estabelecimento_outro_s_qual_is_masculino,
+    Capacidade_outros_feminino             = x1_3_capacidade_do_estabelecimento_outro_s_qual_is_feminino
   ) |>
   pivot_longer(
     cols = starts_with("capacidade"),names_to = "variavel",values_to = "qtd"
@@ -173,9 +173,90 @@ entidade02_populacao01 <-
     sexo = str_to_sentence(sexo)
   )
 
+write_rds(
+  entidade02_populacao01,
+  file = "../data/data_rds/entidade01_populacao01.rds"
+)
+
+write_xlsx(
+  entidade02_populacao01,
+  path = "../data/data_xlsx/entidade02_populacao01.xlsx"
+)
+
+write_rds(
+  entidade02_populacao01,
+  file = "../relatorio_indicadores/data/data_rds/entidade02_populacao01.rds"
+)
+
+write_xlsx(
+  entidade02_populacao01,
+  path = "../relatorio_indicadores/data/data_xlsx/entidade02_populacao01.xlsx"
+)
+
+populacao_sexo <-
+  entidade02_populacao01 |>
+  group_by(ciclo,ano,semestre,variavel, sexo) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
+  ) |>
+  pivot_wider(
+      names_from = sexo,
+      values_from = qtd
+  ) |>
+  mutate(
+    total = Feminino + Masculino
+  )
+
+
+## CAPACIDADE E POPULACAO GERAL - SEM FILTRO DE MONITORAMENTO ----------------
+
+capacidade_geral <-
+  entidade01_capacidade02 |>
+  mutate(
+    regime = str_to_sentence(if_else(regime == "Rdd", "fechado",regime)),
+  ) |>
+  group_by(ciclo,ano,semestre,modalidade,ambito,uf,variavel,regime,sexo) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
+  )
+
+
+populacao_geral <-
+  entidade02_populacao01 |>
+  mutate(
+    regime = if_else(str_detect(regime,regex("Medida de segurança", ignore_case=TRUE)),"Medida de segurança", regime),
+  ) |>
+  group_by(ciclo,ano,semestre,modalidade,ambito, uf,variavel,regime,sexo) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
+  )
+
+capacidade_populacao_geral <-
+  bind_rows(capacidade_geral,populacao_geral)
+
+write_rds(
+  capacidade_populacao_geral,
+  file = "../data/data_rds/capacidade_populacao_geral.rds"
+)
+
+write_xlsx(
+  capacidade_populacao_geral,
+  path = "../data/data_xlsx/capacidade_populacao_geral.xlsx"
+)
+
+write_rds(
+  capacidade_populacao_geral,
+  file = "../relatorio_indicadores/data/data_rds/capacidade_populacao_geral.rds"
+)
+
+write_xlsx(
+  capacidade_populacao_geral,
+  path = "../relatorio_indicadores/data/data_xlsx/capacidade_populacao_geral.xlsx"
+)
 
 ## CAPACIDADE E POPULACAO --------------
 # SEPARA A CAPACIDADE POR MODALIDADE, UF E REGIME
+
 
 taxa_ocupacao_capacidade <-
   entidade01_capacidade02 |>
@@ -204,12 +285,34 @@ taxa_ocupacao_populacao <-
     qtd = sum(qtd,na.rm = TRUE)
   )
 
+tabela_capacidade_populacao <-
+  bind_rows(taxa_ocupacao_capacidade,taxa_ocupacao_populacao)
+
+write_rds(
+  tabela_capacidade_populacao,
+  file = "../data/data_rds/tabela_capacidade_populacao.rds"
+)
+
+write_xlsx(
+  tabela_capacidade_populacao,
+  path = "../data/data_xlsx/tabela_capacidade_populacao.xlsx"
+)
+
+write_rds(
+  tabela_capacidade_populacao,
+  file = "../relatorio_indicadores/data/data_rds/tabela_capacidade_populacao.rds"
+)
+
+write_xlsx(
+  tabela_capacidade_populacao,
+  path = "../relatorio_indicadores/data/data_xlsx/tabela_capacidade_populacao.xlsx"
+)
 
 
 ## TAXA DE OCUPACAO E DEFICIT DE VAGAS -----
 
 taxa_ocupacao_geral <-
-  bind_rows(taxa_ocupacao_capacidade,taxa_ocupacao_populacao) |>
+  tabela_capacidade_populacao |>
   pivot_wider(
     names_from = variavel,
     values_from = qtd
@@ -220,8 +323,8 @@ taxa_ocupacao_uf_estadual <-
   filter(ambito == "Estadual") |>
   group_by(ciclo, ano, semestre, uf) |>
   summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
   )
 
 taxa_ocupacao_sexo_uf_estadual <-
@@ -229,8 +332,8 @@ taxa_ocupacao_sexo_uf_estadual <-
   filter(ambito == "Estadual") |>
   group_by(ciclo, ano, semestre, uf, sexo) |>
   summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
   )
 
 taxa_ocupacao_regime_uf_estadual <-
@@ -238,8 +341,8 @@ taxa_ocupacao_regime_uf_estadual <-
   filter(ambito == "Estadual") |>
   group_by(ciclo, ano, semestre, uf, regime) |>
   summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
   ) |>
   filter(
     taxa_ocupacao > 0
@@ -250,8 +353,8 @@ taxa_ocupacao_brasil_estadual <-
   filter(ambito == "Estadual") |>
   group_by(ciclo, ano, semestre) |>
   summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
   )
 
 taxa_ocupacao_brasil2_estadual <- # SOMENTE REGIMES FECHADO, SEM CONDENACAO E MEDIDA DE SEGURANCAO
@@ -262,8 +365,8 @@ taxa_ocupacao_brasil2_estadual <- # SOMENTE REGIMES FECHADO, SEM CONDENACAO E ME
   ) |>
   group_by(ciclo, ano, semestre, regime) |>
   summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
   )
 
 taxa_ocupacao_brasil3_estadual <- # SEPARADA POR AMBITO
@@ -274,8 +377,8 @@ taxa_ocupacao_brasil3_estadual <- # SEPARADA POR AMBITO
   ) |>
   group_by(ciclo, ano, ambito, semestre, regime) |>
   summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
   )
 
 taxa_ocupacao_sexo_brasil_estadual <-
@@ -283,8 +386,8 @@ taxa_ocupacao_sexo_brasil_estadual <-
   filter(ambito == "Estadual") |>
   group_by(ciclo, ano, semestre, sexo) |>
   summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
   )
 
 taxa_ocupacao_regime_brasil_estadual <-
@@ -292,8 +395,17 @@ taxa_ocupacao_regime_brasil_estadual <-
   filter(ambito == "Estadual") |>
   group_by(ciclo, ano, semestre, regime) |>
   summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
+  )
+
+taxa_ocupacao_sexo_brasil_federal <-
+  taxa_ocupacao_geral |>
+  filter(ambito == "Federal") |>
+  group_by(ciclo, ano, semestre, sexo) |>
+  summarise(
+    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
+    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
   )
 
 ## APRISIONAMENTO --------------
@@ -491,7 +603,7 @@ soma_populacao_ibge_completa <-
   )
 
 
-# TABELA COM DADOS POPULACIONAIS DE P
+# TABELA COM DADOS POPULACIONAIS
 
 aprisionamento_populacao <-
   entidade02_populacao01 |>
