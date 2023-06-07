@@ -5,6 +5,19 @@ library(writexl)
 library(readxl)
 
 # ESSA ROTINA TRATA A TABELA DO INFOPEN E A DIVIDE EM SUB-TABELAS
+# TODAS AS TABELAS PRINCIPAIS (RELATORIOS) SAO CRIADOS TENDO AS SEGUINTES VARIAVEIS FILTROS
+# - CICLO;
+# - ANO;
+# - SEMESTRE;
+# - UF;
+# - NOME DO ESTABELECIMENTO;
+# - MODALIDADE;
+# - AMBITO;
+# - VARIAVEL;
+# - REGIME;
+# - SEXO;
+# - QTD;
+
 
 ## LE A TABELA DO INFOPEN ---------------------------
 
@@ -14,11 +27,11 @@ dados_gerais <-
   )
 
 ## CAPACIDADE DAS UNIDADES  -------------
-### ENTIDADE 01 - CAPACIDADE 01 ----------------
+### RELATORIO 01 - CAPACIDADE GERAL ----------------
 # ESSA ROTINA CONTEM OS DADOS DA CAPACIDADE DAS UNIDADES POR REGIME E SEXO
 # ELA TRATA OS ITENS X1_3 DA TABELA "dados gerais"
 
-entidade01_capacidade01 <-
+rel01_capacidade01 <-
   dados_gerais |>
   select(
     ciclo,
@@ -53,62 +66,66 @@ entidade01_capacidade01 <-
     sexo = str_to_sentence(sexo)
   )
 
-### SALVA NA TABELA DE DADOS TRATADOS GERAL ----
+# GRAVA O RELATORIO 01 - CAPACIDADE
+
 write_rds(
-  entidade01_capacidade01,
-  file = "../data/data_rds/entidade01_capacidade01.rds"
+  rel01_capacidade01,
+  file = "../data/data_rds/rel01_capacidade01.rds"
 )
 
 write_xlsx(
-  entidade01_capacidade01,
-  path = "../data/data_xlsx/entidade01_capacidade01.xlsx"
+  rel01_capacidade01,
+  path = "../data/data_xlsx/rel01_capacidade01.xlsx"
 )
 
-### SALVA NA TABELA DE DADOS TRATADOS NO RELATORIO DE INDICADORES
 write_rds(
-  entidade01_capacidade01,
-  file = "../relatorio_indicadores/data/data_rds/entidade01_capacidade01.rds"
+  rel01_capacidade01,
+  file = "../relatorio_indicadores/data/data_rds/rel01_capacidade01.rds"
 )
 
 write_xlsx(
-  entidade01_capacidade01,
-  path = "../relatorio_indicadores/data/data_xlsx/entidade01_capacidade01.xlsx"
+  rel01_capacidade01,
+  path = "../relatorio_indicadores/data/data_xlsx/rel01_capacidade01.xlsx"
 )
 
-### ENTIDADE 01 - CAPACIDADE 02 - CAPACIDADE POR CICLO, REGIME E SEXO -------------
-
-entidade01_capacidade02 <-
-  entidade01_capacidade01 |>
-  group_by(ciclo, ano, semestre,uf, modalidade, ambito, variavel, regime, sexo) |>
+### RELATORIO 01 - CAPACIDADE 02 -----------------
+# ESSA TABELA ARRUMA O REGIME "RDD" PARA COMPATIBILIZACAO COM A TABELA DA POPULACAO
+rel01_capacidade02 <-
+  rel01_capacidade01 |>
+  mutate(
+    regime = str_to_sentence(if_else(regime == "Rdd", "fechado",regime)),
+  ) |>
+  group_by(ciclo,ano,semestre,uf,nome_do_estabelecimento, modalidade,ambito,variavel,regime,sexo) |>
   summarise(
-    qtd = sum(qtd, na.rm = TRUE)
+    qtd = sum(qtd,na.rm = TRUE)
   )
 
 write_rds(
-  entidade01_capacidade02,
-  file = "../data/data_rds/entidade01_capacidade02.rds"
+  rel01_capacidade02,
+  file = "../data/data_rds/rel01_capacidade02.rds"
 )
 
 write_xlsx(
-  entidade01_capacidade02,
-  path = "../data/data_xlsx/entidade01_capacidade02.xlsx"
+  rel01_capacidade02,
+  path = "../data/data_xlsx/rel01_capacidade02.xlsx"
 )
 
 write_rds(
-  entidade01_capacidade02,
-  file = "../relatorio_indicadores/data/data_rds/entidade01_capacidade02.rds"
+  rel01_capacidade02,
+  file = "../relatorio_indicadores/data/data_rds/rel01_capacidade02.rds"
 )
 
 write_xlsx(
-  entidade01_capacidade02,
-  path = "../relatorio_indicadores/data/data_xlsx/entidade01_capacidade02.xlsx"
+  rel01_capacidade02,
+  path = "../relatorio_indicadores/data/data_xlsx/rel01_capacidade02.xlsx"
 )
+
 
 ## POPULACAO DAS UNIDADES -------------
 
-### ENTIDADE 02 - POP. POR MODALIDADE
+### RELATORIO 02 - POPULACAO 01 - POP. POR MODALIDADE -----------------
 
-entidade02_populacao01 <-
+rel02_populacao01 <-
   dados_gerais |>
   select(
     ciclo,
@@ -174,24 +191,84 @@ entidade02_populacao01 <-
   )
 
 write_rds(
-  entidade02_populacao01,
-  file = "../data/data_rds/entidade01_populacao01.rds"
+  rel02_populacao01,
+  file = "../data/data_rds/rel02_populacao01.rds"
 )
 
 write_xlsx(
-  entidade02_populacao01,
-  path = "../data/data_xlsx/entidade02_populacao01.xlsx"
+  rel02_populacao01,
+  path = "../data/data_xlsx/rel02_populacao01.xlsx"
 )
 
 write_rds(
-  entidade02_populacao01,
-  file = "../relatorio_indicadores/data/data_rds/entidade02_populacao01.rds"
+  rel02_populacao01,
+  file = "../relatorio_indicadores/data/data_rds/rel02_populacao01.rds"
 )
 
 write_xlsx(
-  entidade02_populacao01,
-  path = "../relatorio_indicadores/data/data_xlsx/entidade02_populacao01.xlsx"
+  rel02_populacao01,
+  path = "../relatorio_indicadores/data/data_xlsx/rel02_populacao01.xlsx"
 )
+
+### RELATORIO 02 - POPULACAO 02 ---------------
+# ESSA TABELA ARRUMA O REGIME "MEDIDA DE SEGURANCA" PARA COMPATIBILIZACAO COM A TABELA DA CAPACIDADE
+
+rel02_populacao02<-
+  rel02_populacao01 |>
+  mutate(
+    regime = if_else(str_detect(regime,regex("Medida de segurança", ignore_case=TRUE)),"Medida de segurança", regime),
+  ) |>
+  group_by(ciclo,ano,semestre,uf,nome_do_estabelecimento,modalidade,ambito,variavel,regime,sexo) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
+  )
+
+
+## RELATORIO 03 - OCUPACAO - EMPILHAMENTO CAPACIDADE X POPULACAO ---------------
+# ESSAS TABELA EMPILHA TODOS OS DADOS SOBRE CAPACIDADE E POPULACAO E CALCULA TAXA DE OCUPACAO
+
+### RELATORIO 03 - OCUPACAO 01 - EMPILHA AS TABELAS
+
+rel03_ocupacao01 <-
+  bind_rows(
+    rel01_capacidade02,
+    rel02_populacao02
+  )
+
+### RELATORIO 03 - OCUPACAO 02 - TRATA A CAPACIDADE E POPULACAO EM COLUNAS SEPARADAS
+
+rel03_ocupacao02 <-
+  rel03_ocupacao01 |>
+  pivot_wider(
+    names_from = variavel,
+    values_from = qtd
+  )
+
+### RELATORIO 03 - OCUPACAO 03 - CALCULA A TAXA DE OCUPACAO PARA UNIDADES FISICAS
+# TRANSFORMA A CAPACIDADE "OUTROS" EM "SEM CONDENACAO"
+# EM ANALISE A TABELA BRUTA, FOI VERIFICADO QUE A GRANDE MAIORIA DA CAPACIDADE "OUTROS" EM UNIDADES
+# FISICAS SAO ADVINDAS DE VAGAS DE TRIAGEM, OU SEJA, PESSOAS "SEM CONDENACAO" PRINCIPALMENTE NA
+# BAHIA
+
+rel03_ocupacao03 <-
+  rel03_ocupacao02 |>
+  filter(modalidade == "Custódia em unidade prisional") |>
+  mutate(
+    regime = case_when(
+      regime == "Outros" ~ "Sem condenação",
+      TRUE ~ regime
+    )
+  ) |>
+  group_by(
+    ciclo,ano,semestre,uf,nome_do_estabelecimento, modalidade, ambito, regime, sexo
+  ) |>
+  summarise(
+    Capacidade = sum(Capacidade, na.rm = TRUE),
+    População = sum(População, na.rm = TRUE),
+    taxa_ocupacao = round((População/Capacidade)*100, digits = 2)
+  )
+
+
 
 populacao_sexo <-
   entidade02_populacao01 |>
@@ -210,15 +287,7 @@ populacao_sexo <-
 
 ## CAPACIDADE E POPULACAO GERAL - SEM FILTRO DE MONITORAMENTO ----------------
 
-capacidade_geral <-
-  entidade01_capacidade02 |>
-  mutate(
-    regime = str_to_sentence(if_else(regime == "Rdd", "fechado",regime)),
-  ) |>
-  group_by(ciclo,ano,semestre,modalidade,ambito,uf,variavel,regime,sexo) |>
-  summarise(
-    qtd = sum(qtd,na.rm = TRUE)
-  )
+
 
 
 populacao_geral <-
