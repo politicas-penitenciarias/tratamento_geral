@@ -224,10 +224,10 @@ rel02_populacao02<-
   )
 
 
-## RELATORIO 03 - OCUPACAO - EMPILHAMENTO CAPACIDADE X POPULACAO ---------------
+## OCUPACAO - EMPILHAMENTO CAPACIDADE X POPULACAO ---------------
 # ESSAS TABELA EMPILHA TODOS OS DADOS SOBRE CAPACIDADE E POPULACAO E CALCULA TAXA DE OCUPACAO
 
-### RELATORIO 03 - OCUPACAO 01 - EMPILHA AS TABELAS
+### RELATORIO 03 - OCUPACAO 01 - EMPILHA AS TABELAS ----
 
 rel03_ocupacao01 <-
   bind_rows(
@@ -235,7 +235,7 @@ rel03_ocupacao01 <-
     rel02_populacao02
   )
 
-### RELATORIO 03 - OCUPACAO 02 - TRATA A CAPACIDADE E POPULACAO EM COLUNAS SEPARADAS
+### RELATORIO 03 - OCUPACAO 02 - TRATA A CAPACIDADE E POPULACAO EM COLUNAS SEPARADAS -----
 
 rel03_ocupacao02 <-
   rel03_ocupacao01 |>
@@ -244,7 +244,7 @@ rel03_ocupacao02 <-
     values_from = qtd
   )
 
-### RELATORIO 03 - OCUPACAO 03 - CALCULA A TAXA DE OCUPACAO PARA UNIDADES FISICAS
+### RELATORIO 03 - OCUPACAO 03 - CALCULA A TAXA DE OCUPACAO PARA UNIDADES FISICAS ------
 # TRANSFORMA A CAPACIDADE "OUTROS" EM "SEM CONDENACAO"
 # EM ANALISE A TABELA BRUTA, FOI VERIFICADO QUE A GRANDE MAIORIA DA CAPACIDADE "OUTROS" EM UNIDADES
 # FISICAS SAO ADVINDAS DE VAGAS DE TRIAGEM, OU SEJA, PESSOAS "SEM CONDENACAO" PRINCIPALMENTE NA
@@ -268,233 +268,28 @@ rel03_ocupacao03 <-
     taxa_ocupacao = round((População/Capacidade)*100, digits = 2)
   )
 
+### RELATORIO 03 - OCUPACAO 04 - CALCULA A QUANTIDADE DE EQUIPAMENTO DE MONITORACAO DISPONIVEL -----
 
-
-populacao_sexo <-
-  entidade02_populacao01 |>
-  group_by(ciclo,ano,semestre,variavel, sexo) |>
-  summarise(
-    qtd = sum(qtd,na.rm = TRUE)
+rel03_ocupacao04 <-
+  rel03_ocupacao02 |>
+  filter(modalidade != "Custódia em unidade prisional") |>
+  group_by(
+    ciclo,ano,semestre,uf,nome_do_estabelecimento, modalidade, ambito, regime, sexo
   ) |>
-  pivot_wider(
-      names_from = sexo,
-      values_from = qtd
-  ) |>
-  mutate(
-    total = Feminino + Masculino
-  )
-
-
-## CAPACIDADE E POPULACAO GERAL - SEM FILTRO DE MONITORAMENTO ----------------
-
-
-
-
-populacao_geral <-
-  entidade02_populacao01 |>
-  mutate(
-    regime = if_else(str_detect(regime,regex("Medida de segurança", ignore_case=TRUE)),"Medida de segurança", regime),
-  ) |>
-  group_by(ciclo,ano,semestre,modalidade,ambito, uf,variavel,regime,sexo) |>
   summarise(
-    qtd = sum(qtd,na.rm = TRUE)
-  )
-
-capacidade_populacao_geral <-
-  bind_rows(capacidade_geral,populacao_geral)
-
-write_rds(
-  capacidade_populacao_geral,
-  file = "../data/data_rds/capacidade_populacao_geral.rds"
-)
-
-write_xlsx(
-  capacidade_populacao_geral,
-  path = "../data/data_xlsx/capacidade_populacao_geral.xlsx"
-)
-
-write_rds(
-  capacidade_populacao_geral,
-  file = "../relatorio_indicadores/data/data_rds/capacidade_populacao_geral.rds"
-)
-
-write_xlsx(
-  capacidade_populacao_geral,
-  path = "../relatorio_indicadores/data/data_xlsx/capacidade_populacao_geral.xlsx"
-)
-
-capacidade_populacao_geral2 <-
-  capacidade_populacao_geral |>
-  group_by(ciclo,ano,semestre,modalidade,variavel,ambito,sexo) |>
-  summarise(
-    qtd = sum(qtd, na.rm = TRUE)
-  )
-
-deficit_vagas <-
-  capacidade_populacao_geral2 |>
-  pivot_wider(
-    names_from = variavel,
-    values_from = qtd
-  ) |>
-  mutate(
-    deficit = as.integer(round(Capacidade - População))
-  )
-
-## CAPACIDADE E POPULACAO --------------
-# SEPARA A CAPACIDADE POR MODALIDADE, UF E REGIME
-
-
-taxa_ocupacao_capacidade <-
-  entidade01_capacidade02 |>
-  filter(
-    modalidade == "Custódia em unidade prisional"
-  ) |>
-  mutate(
-    regime = str_to_sentence(if_else(regime == "Rdd", "fechado",regime)),
-  ) |>
-  group_by(ciclo,ano,semestre,ambito,uf,variavel,regime,sexo) |>
-  summarise(
-    qtd = sum(qtd,na.rm = TRUE)
+    Capacidade = sum(Capacidade, na.rm = TRUE),
+    População = sum(População, na.rm = TRUE),
+    deficit_superavit_equip = as.integer(População-Capacidade)
   )
 
 
-taxa_ocupacao_populacao <-
-  entidade02_populacao01 |>
-  mutate(
-    regime = if_else(str_detect(regime,regex("Medida de segurança", ignore_case=TRUE)),"Medida de segurança", regime),
-  ) |>
-  filter(
-    modalidade == "Custódia em unidade prisional"
-  ) |>
-  group_by(ciclo,ano,semestre,ambito, uf,variavel,regime,sexo) |>
-  summarise(
-    qtd = sum(qtd,na.rm = TRUE)
-  )
-
-tabela_capacidade_populacao <-
-  bind_rows(taxa_ocupacao_capacidade,taxa_ocupacao_populacao)
-
-write_rds(
-  tabela_capacidade_populacao,
-  file = "../data/data_rds/tabela_capacidade_populacao.rds"
-)
-
-write_xlsx(
-  tabela_capacidade_populacao,
-  path = "../data/data_xlsx/tabela_capacidade_populacao.xlsx"
-)
-
-write_rds(
-  tabela_capacidade_populacao,
-  file = "../relatorio_indicadores/data/data_rds/tabela_capacidade_populacao.rds"
-)
-
-write_xlsx(
-  tabela_capacidade_populacao,
-  path = "../relatorio_indicadores/data/data_xlsx/tabela_capacidade_populacao.xlsx"
-)
 
 
-## TAXA DE OCUPACAO E DEFICIT DE VAGAS -----
 
-taxa_ocupacao_geral <-
-  tabela_capacidade_populacao |>
-  pivot_wider(
-    names_from = variavel,
-    values_from = qtd
-  )
 
-taxa_ocupacao_uf_estadual <-
-  taxa_ocupacao_geral |>
-  filter(ambito == "Estadual") |>
-  group_by(ciclo, ano, semestre, uf) |>
-  summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
-  )
 
-taxa_ocupacao_sexo_uf_estadual <-
-  taxa_ocupacao_geral |>
-  filter(ambito == "Estadual") |>
-  group_by(ciclo, ano, semestre, uf, sexo) |>
-  summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
-  )
 
-taxa_ocupacao_regime_uf_estadual <-
-  taxa_ocupacao_geral |>
-  filter(ambito == "Estadual") |>
-  group_by(ciclo, ano, semestre, uf, regime) |>
-  summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
-  ) |>
-  filter(
-    taxa_ocupacao > 0
-  )
-
-taxa_ocupacao_brasil_estadual <-
-  taxa_ocupacao_geral |>
-  filter(ambito == "Estadual") |>
-  group_by(ciclo, ano, semestre) |>
-  summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
-  )
-
-taxa_ocupacao_brasil2_estadual <- # SOMENTE REGIMES FECHADO, SEM CONDENACAO E MEDIDA DE SEGURANCAO
-  taxa_ocupacao_geral |>
-  filter(ambito == "Estadual") |>
-  filter(
-    regime %in% c("Fechado","Medida de segurança","Sem condenação")
-  ) |>
-  group_by(ciclo, ano, semestre, regime) |>
-  summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
-  )
-
-taxa_ocupacao_brasil3_estadual <- # SEPARADA POR AMBITO
-  taxa_ocupacao_geral |>
-  filter(ambito == "Estadual") |>
-  filter(
-    regime %in% c("Fechado","Medida de segurança","Sem condenação")
-  ) |>
-  group_by(ciclo, ano, ambito, semestre, regime) |>
-  summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
-  )
-
-taxa_ocupacao_sexo_brasil_estadual <-
-  taxa_ocupacao_geral |>
-  filter(ambito == "Estadual") |>
-  group_by(ciclo, ano, semestre, sexo) |>
-  summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
-  )
-
-taxa_ocupacao_regime_brasil_estadual <-
-  taxa_ocupacao_geral |>
-  filter(ambito == "Estadual") |>
-  group_by(ciclo, ano, semestre, regime) |>
-  summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
-  )
-
-taxa_ocupacao_sexo_brasil_federal <-
-  taxa_ocupacao_geral |>
-  filter(ambito == "Federal") |>
-  group_by(ciclo, ano, semestre, sexo) |>
-  summarise(
-    taxa_ocupacao = round(sum(População,na.rm = TRUE)/sum(Capacidade, na.rm = TRUE)*100,digits = 2),
-    deficit_vagas = sum(Capacidade, na.rm = TRUE) - sum(População,na.rm = TRUE)
-  )
-
-## APRISIONAMENTO --------------
+## IBGE - POPULACAO --------------
 
 # TABELA RETIRADA DO SIDRA NO LINK
 # https://sidra.ibge.gov.br/tabela/5917
@@ -502,16 +297,18 @@ taxa_ocupacao_sexo_brasil_federal <-
 # ESSE CALCULO TODOS OS APENADOS - INCLUSIVE EM PRISAO DOMICILIAR MONITORADOS OU NAO
 # ESSE CALCULO TODOS OS APENADOS - EM AMBITOS ESTADUAL E FEDERAL
 
-tabela_ibge_trimestre4_2022_ciclo13 <-
+### RELATORIO 04 - CICLO 13 -----
+
+rel04_ibge_trimestre4_2022_ciclo13 <-
   read_xlsx(
     path = "../data_raw/populacao_ibge_pnad_continua_trimestre4_2022_ciclo13.xlsx",
     skip = 4
   ) |>
   filter(!is.na(Homens))
-names(tabela_ibge_trimestre4_2022_ciclo13) <- c("uf","Masculino","Feminino")
+names(rel04_ibge_trimestre4_2022_ciclo13) <- c("uf","Masculino","Feminino")
 
-tabela_ibge_trimestre4_2022_ciclo13<-
-  tabela_ibge_trimestre4_2022_ciclo13 |>
+rel04_ibge_trimestre4_2022_ciclo13 <-
+  rel04_ibge_trimestre4_2022_ciclo13 |>
   mutate(
     uf = case_when(
       uf == "Rondônia" ~ "RO",
@@ -557,17 +354,18 @@ tabela_ibge_trimestre4_2022_ciclo13<-
     values_to = "populacao_ibge"
   )
 
+### RELATORIO 04 - CICLO 12 -----
 
-tabela_ibge_trimestre2_2022_ciclo12 <-
+rel04_ibge_trimestre2_2022_ciclo12 <-
   read_xlsx(
     path = "../data_raw/populacao_ibge_pnad_continua_trimestre2_2022_ciclo12.xlsx",
     skip = 4
   ) |>
   filter(!is.na(Homens))
-names(tabela_ibge_trimestre2_2022_ciclo12) <- c("uf","Masculino","Feminino")
+names(rel04_ibge_trimestre2_2022_ciclo12) <- c("uf","Masculino","Feminino")
 
-tabela_ibge_trimestre2_2022_ciclo12 <-
-  tabela_ibge_trimestre2_2022_ciclo12 |>
+rel04_ibge_trimestre2_2022_ciclo12 <-
+  rel04_ibge_trimestre2_2022_ciclo12 |>
   mutate(
     uf = case_when(
       uf == "Rondônia" ~ "RO",
@@ -613,8 +411,9 @@ tabela_ibge_trimestre2_2022_ciclo12 <-
     values_to = "populacao_ibge"
   )
 
+### RELATORIO 04 - CICLO 11 -----
 
-tabela_ibge_trimestre4_2021_ciclo11 <-
+rel04_ibge_trimestre4_2021_ciclo11 <-
   read_xlsx(
     path = "../data_raw/populacao_ibge_pnad_continua_trimestre4_2021_ciclo11.xlsx",
     skip = 5
@@ -635,8 +434,9 @@ tabela_ibge_trimestre4_2021_ciclo11 <-
     values_to = "populacao_ibge"
   )
 
+### RELATORIO 04 - CICLO 10 -----
 
-tabela_ibge_trimestre2_2021_ciclo10 <-
+rel04_ibge_trimestre2_2021_ciclo10 <-
   read_xlsx(
     path = "../data_raw/populacao_ibge_pnad_continua_trimestre2_2021_ciclo10.xlsx",
     skip = 5
@@ -657,14 +457,19 @@ tabela_ibge_trimestre2_2021_ciclo10 <-
     values_to = "populacao_ibge"
   )
 
-populacao_ibge_ciclo_12_13 <-
+
+### RELATORIO 04 - IBGE 01 - EMPILHA AS TABELAS DO IBGE POR ESTADO NOS CICLO 12 E 13 -----
+
+rel04_ibge01_empilhamento_ciclo_12_13 <-
   bind_rows(
-    tabela_ibge_trimestre2_2022_ciclo12,
-    tabela_ibge_trimestre4_2022_ciclo13,
+    rel04_ibge_trimestre2_2022_ciclo12,
+    rel04_ibge_trimestre4_2022_ciclo13
   )
 
-soma_populacao_ibge_ciclo_12_13 <-
-  populacao_ibge_ciclo_12_13 |>
+### RELATORIO 04 - IBGE 02 - EMPILHANDO OS CICLO 12 E 13 E SOMANDO A POPULACAO POR PAIS ----
+
+rel04_ibge02_ciclo_12_13 <-
+  rel04_ibge01_empilhamento_ciclo_12_13 |>
   group_by(
     ciclo,ano,semestre,sexo
   ) |>
@@ -676,23 +481,31 @@ soma_populacao_ibge_ciclo_12_13 <-
   ) |>
   relocate(uf, .before = ciclo)
 
-soma_populacao_ibge_ciclo_10_11 <-
+
+### RELATORIO 04 - IBGE 03 - EMPILHANDO AS TABELAS DOS CICLOS 10 E 11 ----
+
+rel04_ibge03_ciclo_10_11 <-
   bind_rows(
-    tabela_ibge_trimestre2_2021_ciclo10,
-    tabela_ibge_trimestre4_2021_ciclo11
+    rel04_ibge_trimestre2_2021_ciclo10,
+    rel04_ibge_trimestre4_2021_ciclo11
   )
 
-soma_populacao_ibge_completa <-
+### RELATORIO 04 - IBGE 04 - EMPILHANDO TODAS AS TABEAS DO IBGE ------
+
+rel04_ibge04_completa <-
   bind_rows(
-    soma_populacao_ibge_ciclo_10_11,
-    soma_populacao_ibge_ciclo_12_13
+    rel04_ibge03_ciclo_10_11,
+    rel04_ibge02_ciclo_12_13
   )
 
+## APRISIONAMENTO - INTEGRA AS TABELAS DO INFOPEN E IBGE COM CALCULO DA TAXA DE APRISIONAMENTO ----
+# A TAXA DE APRISIONAMENTO EH CALCULAR A CONSIDERANDO AS PESSOAS QUE CUMPREM PENA NOS ESTABELECIMENTOS
+# PRISIONAIS FISICAMENTE.
 
-# TABELA COM DADOS POPULACIONAIS
+### RELATORIO 05 - APRIS. 01 - SOMA A POPULACAO POR UF PARA INTEGRACAO COM IBGE ----
 
-aprisionamento_populacao <-
-  entidade02_populacao01 |>
+rel05_aprisionamento01_soma_populacao <-
+  rel02_populacao01 |>
   filter(modalidade == "Custódia em unidade prisional") |>
   group_by(
     uf, ciclo, ano, semestre, sexo
@@ -701,54 +514,111 @@ aprisionamento_populacao <-
     populacao_prisional = sum(qtd, na.rm = TRUE)
   )
 
-soma_populacao_prisional_completa <-
-  aprisionamento_populacao |>
+
+### RELATORIO 05 - APRIS. 02 - INTEGRA TABELAS INFOPEN E IBGE BRASIL PARA OS CICLOS 12 E 13 ----
+
+rel05_aprisionamento02_integracao_filtro <-
+  rel05_aprisionamento01_soma_populacao |>
+  filter(!ciclo %in% c(10,11))
+
+rel05_aprisionamento02_integracao <-
+  full_join(rel05_aprisionamento02_integracao_filtro, rel04_ibge01_empilhamento_ciclo_12_13) |>
+  group_by(uf, ciclo, ano, sexo, semestre) |>
+  summarise(
+    populacao_prisional = as.integer(sum(populacao_prisional, na.rm = TRUE)),
+    populacao_ibge = as.integer(sum(populacao_ibge,na.rm = TRUE)),
+    tx_aprisionamento = round((sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000, digits = 2)
+  )
+
+
+### RELATORIO 05 - APRIS. 03 - SOMA A POPULACAO PRISIONAL PARA INTEGRACAO COM O IBGE ----
+
+rel05_aprisionamento03_soma_populacao <-
+  rel02_populacao01 |>
+  filter(modalidade == "Custódia em unidade prisional") |>
   group_by(
-    ciclo,ano,semestre,sexo
+    ciclo, ano, semestre, sexo
   ) |>
   summarise(
-    populacao_prisional = sum(populacao_prisional,na.rm = TRUE)
+    populacao_prisional = sum(qtd, na.rm = TRUE)
   )
 
-taxa_aprisionamento_geral_brasil <-
-  left_join(soma_populacao_ibge_completa,soma_populacao_prisional_completa) |>
-  group_by(ciclo, ano, semestre) |>
+### RELATORIO 05 - APRIS. 04 - INTEGRA TABELAS INFOPEN E IBGE BRASIL PARA TODOS OS CICLOS ----
+
+rel05_aprisionamento04_integracao <-
+  full_join(rel05_aprisionamento03_soma_populacao, rel04_ibge04_completa) |>
+  group_by(uf, ciclo, ano, sexo, semestre) |>
   summarise(
-    populacao_prisional = sum(populacao_prisional, na.rm = TRUE),
-    populacao_ibge = sum(populacao_ibge,na.rm = TRUE),
-    tx_aprisionamento = (sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000
+    populacao_prisional = as.integer(sum(populacao_prisional, na.rm = TRUE)),
+    populacao_ibge = as.integer(sum(populacao_ibge,na.rm = TRUE)),
+    tx_aprisionamento = round((sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000, digits = 2)
   )
 
-taxa_aprisionamento_geral_brasil_sexo <-
-  left_join(soma_populacao_ibge_completa,soma_populacao_prisional_completa) |>
-  group_by(ciclo, ano, semestre, sexo) |>
-  summarise(
-    populacao_prisional = sum(populacao_prisional, na.rm = TRUE),
-    populacao_ibge = sum(populacao_ibge,na.rm = TRUE),
-    tx_aprisionamento = (sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000
-  )
+## PENALIZACAO - INTEGRA AS TABELAS DO INFOPEN E IBGE COM CALCULO DA TAXA DE PENALIZACAO ----
+# A TAXA DE PENALIZACAO CONSIDERA TODOS AS PESSOAS CUMPRINDO ALGUMA PENA PUNITIVA, OU SEJA,
+# CONSIDERA PESSOAS EM MONITORAMENTO ELETRONICO, PRISAO DOMICILIAR ENTRE OUTRAS MEDIDAS
+# EXECUTADAS PELO PODE EXECUTIVO.
 
+### RELATORIO 06 - PENAL. 01 - SOMA A POPULACAO POR UF PARA INTEGRACAO COM IBGE ----
 
-taxa_aprisionamento_geral_uf_sexo <-
-  left_join(
-    aprisionamento_populacao,
-    populacao_ibge_ciclo_12_13
-  ) |>
-  filter(!ciclo %in% c(10,11)) |>
-  mutate(
-    tx_aprisionamento = (sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000
-  )
-
-
-taxa_aprisionamento_geral_uf <-
-  taxa_aprisionamento_geral_uf_sexo |>
+rel06_penalizacao01_soma_populacao <-
+  rel02_populacao01 |>
   group_by(
-    uf, ciclo, ano, semestre
+    uf, ciclo, ano, semestre, sexo
   ) |>
   summarise(
-    tx_aprisionamento = (sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000
+    populacao_prisional = sum(qtd, na.rm = TRUE)
   )
 
 
+### RELATORIO 06 - PENAL. 02 - INTEGRA TABELAS INFOPEN E IBGE BRASIL PARA OS CICLOS 12 E 13 ----
 
+rel06_penalizacao02_integracao_filtro <-
+  rel06_penalizacao01_soma_populacao |>
+  filter(!ciclo %in% c(10,11))
 
+rel06_penalizacao02_integracao <-
+  full_join(rel06_penalizacao02_integracao_filtro, rel04_ibge01_empilhamento_ciclo_12_13) |>
+  group_by(uf, ciclo, ano, sexo, semestre) |>
+  summarise(
+    populacao_prisional = as.integer(sum(populacao_prisional, na.rm = TRUE)),
+    populacao_ibge = as.integer(sum(populacao_ibge,na.rm = TRUE)),
+    tx_penalizacao = round((sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000, digits = 2)
+  )
+
+### RELATORIO 06 - PENAL. 03 - SOMA A POPULACAO PRISIONAL PARA INTEGRACAO COM O IBGE ----
+
+rel06_penalizacao03_soma_populacao <-
+  rel02_populacao01 |>
+  group_by(
+    ciclo, ano, semestre, sexo
+  ) |>
+  summarise(
+    populacao_prisional = sum(qtd, na.rm = TRUE)
+  )
+
+### RELATORIO 06 - PENAL. 04 - INTEGRA TABELAS INFOPEN E IBGE BRASIL PARA TODOS OS CICLOS ----
+
+rel06_penalizacao04_integracao <-
+  full_join(rel06_penalizacao03_soma_populacao, rel04_ibge04_completa) |>
+  group_by(uf, ciclo, ano, sexo, semestre) |>
+  summarise(
+    populacao_prisional = as.integer(sum(populacao_prisional, na.rm = TRUE)),
+    populacao_ibge = as.integer(sum(populacao_ibge,na.rm = TRUE)),
+    tx_penalizacao = round((sum(populacao_prisional, na.rm = TRUE) / sum(populacao_ibge,na.rm = TRUE))*100000, digits = 2)
+  )
+
+## INTEGRACAO DE TAXAS - INTEGRA AS TABELAS COM TAXAS DE APRISIONAMENTO E PENALIZACAO ----
+# AGRUPA AS TAXAS CITADAS EM UMA MESMA TABELA, QUANDO POSSIVEL.
+# LEMBRANDO:
+#   - AS TAXAS DE OCUPACAO E APRISIONAMENTO EXCLUEM AS PESSOAS EM PRISAO DOMICILIAR MONITORADAS OU NAO;
+#   - A TAXA DE PENALIZACAO INCLUI TODO OS SISTEMA PRISIONAL ADMINISTRADO PELO PODER EXECUTIVO.
+#   - AS VARIAVEIS "populacao_prisinal.x" e "populacao_prisinal.y" SAO REFERENTES AS POPULACOES COM FILTRO DE MONITORAMENTO OU NAO.
+
+### RELATORIO 07 - TAXAS 01 - INTEGRA AS TAXAS EM UMA UNICA TABELA ----
+rel07_taxas01 <-
+  full_join(
+    rel05_aprisionamento02_integracao,
+    rel06_penalizacao02_integracao,
+    by = c("uf","ciclo","ano","sexo","semestre","populacao_ibge")
+  )
