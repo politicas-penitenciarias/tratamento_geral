@@ -5,7 +5,7 @@ library(writexl)
 library(readxl)
 
 # ESSA ROTINA TRATA A TABELA DO INFOPEN E A DIVIDE EM SUB-TABELAS
-# TODAS AS TABELAS PRINCIPAIS (RELATORIOS) SAO CRIADOS TENDO AS SEGUINTES VARIAVEIS FILTROS
+# EM GERAL, AS TABELAS PRINCIPAIS (RELATORIOS) SAO CRIADAS TENDO AS SEGUINTES VARIAVEIS:
 # - CICLO;
 # - ANO;
 # - SEMESTRE;
@@ -27,7 +27,7 @@ dados_gerais <-
   )
 
 ## CAPACIDADE DAS UNIDADES  -------------
-### RELATORIO 01 - CAPACIDADE GERAL ----------------
+### RELATORIO 01 - CAPACIDADE 01 - CAPACIDADE GERAL ----------------
 # ESSA ROTINA CONTEM OS DADOS DA CAPACIDADE DAS UNIDADES POR REGIME E SEXO
 # ELA TRATA OS ITENS X1_3 DA TABELA "dados gerais"
 
@@ -281,11 +281,6 @@ rel03_ocupacao04 <-
     População = sum(População, na.rm = TRUE),
     deficit_superavit_equip = as.integer(População-Capacidade)
   )
-
-
-
-
-
 
 
 
@@ -622,3 +617,30 @@ rel07_taxas01 <-
     rel06_penalizacao02_integracao,
     by = c("uf","ciclo","ano","sexo","semestre","populacao_ibge")
   )
+
+## MEDIDA DE SEGURANCA - ANALISA A SITUACAO DOS PRESOS EM TRATAMENTO ----
+
+### RELATORIO 08 - MEDIDA01 -----
+
+rel08_medida01 <-
+  dados_gerais |>
+  select(
+    ciclo,
+    x4_1_populacao_prisional_medida_de_seguranca_internacao_total,
+    x4_1_populacao_prisional_medida_de_seguranca_tratamento_ambulatorial_total,
+    x1_2_tipo_de_estabelecimento_originalmente_destinado,
+    nome_do_estabelecimento
+  ) |>
+  filter(
+    ciclo == 13,
+    x4_1_populacao_prisional_medida_de_seguranca_internacao_total > 0,
+    x1_2_tipo_de_estabelecimento_originalmente_destinado != "Estabelecimento Destinado Ao Cumprimento De Medida De Segurança De Internação Ou Tratamento Ambulatorial"
+  )
+
+write_xlsx(
+  rel08_medida01,
+  path = "../data/data_xlsx/rel08_medida01.xlsx"
+)
+
+
+
