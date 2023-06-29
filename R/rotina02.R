@@ -120,6 +120,44 @@ write_xlsx(
   path = "../relatorio_indicadores/data/data_xlsx/rel01_capacidade02.xlsx"
 )
 
+### RELATORIO 01 - CAPACIDADE 03 -----------------
+# ESSA TABELA AJUSTA A TABELA COM A CAPACIDADE DAS CARCERAGENS
+
+rel01_capacidade03<-
+  readRDS(file = "../data/data_rds/base_dados_carceragens.rds") |>
+  select(
+    ciclo,
+    ano,
+    semestre,
+    uf,
+    qtd_vagas_masculino,
+    qtd_vagas_feminino
+  ) |>
+  pivot_longer(
+    cols = qtd_vagas_masculino:qtd_vagas_feminino,
+    names_to = "variavel",
+    values_to = "qtd"
+  ) |>
+  mutate(
+    regime = "Sem condenação",
+    ambito = "Estadual",
+    ambito_origem = "Justiça estadual",
+    sexo = case_when(
+      str_detect(variavel, regex(c("(masculino)"), ignore_case = TRUE)) ~ "Masculino",
+      TRUE ~ "Feminino"
+    ),
+    variavel = "Capacidade",
+    modalidade = "Custódia em carceragens"
+  ) |>
+  group_by(
+    ciclo,ano,semestre,
+    modalidade,ambito,uf,
+    variavel,regime,
+    ambito_origem,sexo
+  ) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
+  )
 
 ## POPULACAO DAS UNIDADES -------------
 
@@ -138,15 +176,15 @@ rel02_populacao01 <-
     modalidade,
     população_semAcondenação_justiçaAestadual_masculino = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_justica_estadual_masculino,
     população_semAcondenação_justiçaAestadual_feminino  = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_justica_estadual_feminino,
-    população_semAcondenação_justicaAfederal_masculino = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_justica_federal_masculino,
-    população_semAcondenação_justicaAfederal_feminino  = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_justica_federal_feminino,
+    população_semAcondenação_justiçaAfederal_masculino = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_justica_federal_masculino,
+    população_semAcondenação_justiçaAfederal_feminino  = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_justica_federal_feminino,
     população_semAcondenação_outros_masculino = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_outros_just_trab_civel_masculino,
     população_semAcondenação_outros_feminino  = x4_1_populacao_prisional_presos_provisorios_sem_condenacao_outros_just_trab_civel_feminino,
 
     população_fechado_justiçaAestadual_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_justica_estadual_masculino,
     população_fechado_justiçaAestadual_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_justica_estadual_feminino,
-    população_fechado_justicaAfederal_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_justica_federal_masculino,
-    população_fechado_justicaAfederal_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_justica_federal_feminino,
+    população_fechado_justiçaAfederal_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_justica_federal_masculino,
+    população_fechado_justiçaAfederal_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_justica_federal_feminino,
     população_fechado_outros_masculino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_outros_just_trab_civel_masculino,
     população_fechado_outros_feminino = x4_1_populacao_prisional_presos_sentenciados_regime_fechado_outros_just_trab_civel_feminino,
 
@@ -210,6 +248,7 @@ write_xlsx(
   path = "../relatorio_indicadores/data/data_xlsx/rel02_populacao01.xlsx"
 )
 
+
 ### RELATORIO 02 - POPULACAO 02 ---------------
 # ESSA TABELA ARRUMA O REGIME "MEDIDA DE SEGURANCA" PARA COMPATIBILIZACAO COM A TABELA DA CAPACIDADE
 
@@ -223,6 +262,120 @@ rel02_populacao02<-
     qtd = sum(qtd,na.rm = TRUE)
   )
 
+write_rds(
+  rel02_populacao02,
+  file = "../data/data_rds/rel02_populacao02.rds"
+)
+
+write_xlsx(
+  rel02_populacao02,
+  path = "../data/data_xlsx/rel02_populacao02.xlsx"
+)
+
+
+write_rds(
+  rel02_populacao02,
+  file = "../relatorio_indicadores/data/data_rds/rel02_populacao02.rds"
+)
+
+write_xlsx(
+  rel02_populacao02,
+  path = "../relatorio_indicadores/data/data_xlsx/rel02_populacao02.xlsx"
+)
+
+### RELATORIO 02 - POPULACAO 03 - CARCERAGENS  -----------------
+# ESSE RELATORIO ASSOCIA AS TABELAS COM PESSOAS PRESAS EM CARCERAGENS DE DELEGACIAS,
+# BATALHOES DE PM E BOMBEIRO
+
+rel02_populacao03<-
+  readRDS(file = "../data/data_rds/base_dados_carceragens.rds") |>
+  select(
+    ciclo,
+    ano,
+    semestre,
+    uf,
+    qtd_presos_masculino,
+    qtd_presos_feminino
+  ) |>
+  pivot_longer(
+    cols = qtd_presos_masculino:qtd_presos_feminino,
+    names_to = "variavel",
+    values_to = "qtd"
+  ) |>
+  mutate(
+    regime = "Sem condenação",
+    ambito = "Estadual",
+    ambito_origem = "Justiça estadual",
+    sexo = case_when(
+      str_detect(variavel, regex(c("(masculino)"), ignore_case = TRUE)) ~ "Masculino",
+      TRUE ~ "Feminino"
+    ),
+    variavel = "População",
+    modalidade = "Custódia em carceragens ou batalhões"
+  ) |>
+  group_by(
+    ciclo,ano,semestre,
+    modalidade,ambito,uf,
+    variavel,regime,
+    ambito_origem,sexo
+  ) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
+  )
+
+### RELATORIO 02 - POPULACAO 04 - CARCERAGENS UTILIZANDO A TABELA SIMPLIFICADA DA CNISP -----------------
+# ESSE RELATORIO ASSOCIA AS TABELAS COM PESSOAS PRESAS EM CARCERAGENS DE DELEGACIAS,
+# BATALHOES DE PM E BOMBEIRO BASEADA NA TABELA SIMPLIFICADA DA CNISP
+
+rel02_populacao04 <-
+  readRDS("../data/data_rds/base_dados_carceragens2.rds") |>
+  select(-total) |>
+  pivot_longer(
+    cols = c("Masculino","Feminino"),
+    names_to = "sexo",
+    values_to = "qtd"
+  ) |>
+  relocate(uf, .after = "semestre")
+
+
+### RELATORIO 02 - POPULACAO 05 - ADEQUA A TABELA DE POPULACAO A TABELA DAS CARCERAGENS -----------------
+
+rel02_populacao05 <-
+  rel02_populacao02 |>
+  group_by(ciclo, ano, semestre, uf, modalidade,sexo) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
+  )
+
+### RELATORIO 02 - POPULACAO 06 - INTEGRA AS TABELAS DE CARCERAGEM COM O INFOPEN -----------------
+
+rel02_populacao06 <-
+  bind_rows(rel02_populacao05,rel02_populacao04) |>
+  group_by(ciclo, ano, semestre, uf, modalidade,sexo) |>
+  summarise(
+    qtd = sum(qtd,na.rm = TRUE)
+  )
+
+write_rds(
+  rel02_populacao06,
+  file = "../data/data_rds/rel02_populacao06.rds"
+)
+
+write_xlsx(
+  rel02_populacao06,
+  path = "../data/data_xlsx/rel02_populacao06.xlsx"
+)
+
+
+write_rds(
+  rel02_populacao06,
+  file = "../relatorio_indicadores/data/data_rds/rel02_populacao06.rds"
+)
+
+write_xlsx(
+  rel02_populacao06,
+  path = "../relatorio_indicadores/data/data_xlsx/rel02_populacao06.xlsx"
+)
 
 ## OCUPACAO - EMPILHAMENTO CAPACIDADE X POPULACAO ---------------
 # ESSAS TABELA EMPILHA TODOS OS DADOS SOBRE CAPACIDADE E POPULACAO E CALCULA TAXA DE OCUPACAO
@@ -641,6 +794,7 @@ write_xlsx(
   rel08_medida01,
   path = "../data/data_xlsx/rel08_medida01.xlsx"
 )
+
 
 
 
