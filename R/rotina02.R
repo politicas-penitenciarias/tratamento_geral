@@ -403,6 +403,10 @@ rel03_ocupacao02 <-
 # FISICAS SAO ADVINDAS DE VAGAS DE TRIAGEM, OU SEJA, PESSOAS "SEM CONDENACAO" PRINCIPALMENTE NA
 # BAHIA
 
+vetor_regime_aberto <- c("(aberto)|(apac)|(albergado)|(albergue)")
+vetor_regime_semiaberto <- c("(semmiaberto)|(Centro De Progressão)|(colo(ô)nia)|(albergue)|(Centro De Recuperação)")
+vetor_regime_medida_segurança <- c("(Hospital)|(Psquia(á)trica(o))|(Sanató(o)rio)|(Hospitalar)")
+
 rel03_ocupacao03 <-
   rel03_ocupacao02 |>
   filter(modalidade == "Custódia em unidade prisional") |>
@@ -419,7 +423,36 @@ rel03_ocupacao03 <-
     Capacidade = sum(Capacidade, na.rm = TRUE),
     População = sum(População, na.rm = TRUE),
     taxa_ocupacao = round((População/Capacidade)*100, digits = 2)
+  ) |>
+  mutate(
+    tipo_estabelecimento = case_when(
+      str_detect(nome_do_estabelecimento,regex(vetor_regime_aberto,ignore_case = TRUE))~"Aberto",
+      str_detect(nome_do_estabelecimento,regex(vetor_regime_semiaberto,ignore_case = TRUE))~"Semiaberto",
+      str_detect(nome_do_estabelecimento,regex(vetor_regime_medida_segurança,ignore_case = TRUE))~"Medida de segurança",
+      TRUE ~ "Fechado / provisórios"
+    )
   )
+
+write_rds(
+  rel03_ocupacao03,
+  file = "../data/data_rds/rel03_ocupacao03.rds"
+)
+
+write_xlsx(
+  rel03_ocupacao03,
+  path = "../data/data_xlsx/rel03_ocupacao03.xlsx"
+)
+
+
+write_rds(
+  rel03_ocupacao03,
+  file = "../relatorio_indicadores/data/data_rds/rel03_ocupacao03.rds"
+)
+
+write_xlsx(
+  rel03_ocupacao03,
+  path = "../relatorio_indicadores/data/data_xlsx/rel03_ocupacao03.xlsx"
+)
 
 ### RELATORIO 03 - OCUPACAO 04 - CALCULA A QUANTIDADE DE EQUIPAMENTO DE MONITORACAO DISPONIVEL -----
 
